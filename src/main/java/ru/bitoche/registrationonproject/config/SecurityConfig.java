@@ -23,6 +23,8 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserDetailsService;
 
+import java.util.Objects;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfiguration {
@@ -37,16 +39,18 @@ public class SecurityConfig extends WebSecurityConfiguration {
     }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository securityContextRepository) throws Exception {
-        http
+        http.cors().disable().csrf().disable()
                 .authorizeHttpRequests(
-                        authorizeHttpRequests ->
+                        Objects.requireNonNull(authorizeHttpRequests ->
                                 authorizeHttpRequests.
                                         requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                                         .permitAll().
-                                        requestMatchers("/", "/users/logout", "/users/login", "/users/register", "/users/login-error").permitAll().
-                                        requestMatchers("/users/profile/**", "/teams/profile/**").authenticated().
-                                        requestMatchers("/adm/**").hasRole(USER_ROLE.MAIN_ADMIN.name()).
-                                        anyRequest().authenticated()
+                                        requestMatchers("/", "/check-username", "/users/login", "/users/register", "/users/login-error", "/login").permitAll().
+                                        requestMatchers("/dev/**", "/dev").hasAuthority(USER_ROLE.DEV.name()).
+                                        requestMatchers("/users/profile/**", "/teams/profile/**", "/users/logout").authenticated().
+                                        requestMatchers("/adm/**").hasAuthority(USER_ROLE.MAIN_ADMIN.name()).
+                                        anyRequest().authenticated())
+
                 )
                 .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
                 .logout((logout) ->

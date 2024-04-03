@@ -76,16 +76,22 @@
 <div class="nav">
     <div class="user-info">
     <#if user??>
-            <a href="/users/profile/${user.getId()}">${user.getSurname()} ${user.getName()}</a>
+        <a href="/users/profile/${user.getId()}">${user.getSurname()} ${user.getName()}</a>
         <form method="post" action="/users/logout"><input type="submit" value="Выйти"></form>
         <#else >
-        <a href="/login">Войти</a>
+            <a href="/login">Войти</a>
+            <a href="/users/register">Зарегистрироваться</a>
     </#if>
     </div>
     <#if user??>
         <#if user.getRole().MAIN_ADMIN??>
             <div class="adm-func">
                 кнопка главного админа
+            </div>
+        </#if>
+        <#if user.getRole().name()=="DEV">
+            <div class="adm-func">
+                <a href="/dev/">Панель управления</a>
             </div>
         </#if>
     </#if>

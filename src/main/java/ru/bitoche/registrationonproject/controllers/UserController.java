@@ -13,6 +13,8 @@ import ru.bitoche.registrationonproject.services.AppUserService;
 import ru.bitoche.registrationonproject.services.TopicService;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @AllArgsConstructor
@@ -35,13 +37,17 @@ public class UserController {
     }
     @GetMapping("/check-username")
     @ResponseBody
-    public boolean checkUsernameAvailability(@RequestParam("username") String username) {
-        return userService.isUsernameTaken(username);
+    public Map<String, Boolean> checkUsernameAvailability(@RequestParam("username") String username) {
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("available", !userService.isUsernameTaken(username));
+        return response;
     }
+
     @PostMapping("/users/register")
     public String addUser(@ModelAttribute("appUser") AppUser appUser){
+        appUser.setRole(USER_ROLE.STANDARD);
         userService.addUser(appUser);
-        return "redirect:/main";
+        return "redirect:/";
     }
 
 
