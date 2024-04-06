@@ -5,11 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.bitoche.registrationonproject.models.AppUser;
-import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
+import ru.bitoche.registrationonproject.models.STUDY_GROUP;
 import ru.bitoche.registrationonproject.repos.AppUserRepos;
+import ru.bitoche.registrationonproject.repos.StudyGroupRepos;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class AppUserService {
     @Autowired
     private AppUserRepos appUserRepos;
     private PasswordEncoder passwordEncoder;
+    private StudyGroupRepos stgrRepos;
     public List<AppUser> getAll(){return (List<AppUser>) appUserRepos.findAll();}
     public void update(AppUser user){appUserRepos.save(user);}
     public void updateAll(List<AppUser> users){appUserRepos.saveAll(users);}
@@ -48,5 +50,18 @@ public class AppUserService {
             return appUserRepos.findByLogin(login).get();
         }
         else return null;
+    }
+    public List<STUDY_GROUP> getAllStudyGroups(){
+        return (List<STUDY_GROUP>) stgrRepos.findAll();
+    }
+    public List<Integer> getAllStudyCourses(){
+        List<Integer> output = new ArrayList<>();
+        for (STUDY_GROUP stgr:
+             getAllStudyGroups()) {
+            if(!output.contains(stgr.getCourse())){
+                output.add(stgr.getCourse());
+            }
+        }
+        return output;
     }
 }

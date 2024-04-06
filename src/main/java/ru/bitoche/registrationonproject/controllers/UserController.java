@@ -1,13 +1,10 @@
 package ru.bitoche.registrationonproject.controllers;
 
 import lombok.AllArgsConstructor;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.bitoche.registrationonproject.models.AppUser;
-import ru.bitoche.registrationonproject.models.enums.STUDY_GROUP;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserService;
 import ru.bitoche.registrationonproject.services.TopicService;
@@ -32,7 +29,8 @@ public class UserController {
     }
     @GetMapping("/users/register")
     public String gotoRegisterPage(Model m) {
-        m.addAttribute("allStudyGroups", STUDY_GROUP.values());
+        m.addAttribute("allStudyGroups", userService.getAllStudyGroups());
+        m.addAttribute("allStudyCourses", userService.getAllStudyCourses());
         return "register";
     }
     @GetMapping("/check-username")

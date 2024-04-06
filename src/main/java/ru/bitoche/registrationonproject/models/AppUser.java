@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.lang.Nullable;
-import ru.bitoche.registrationonproject.models.enums.STUDY_GROUP;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 
 import java.util.Date;
@@ -31,5 +30,6 @@ public class AppUser {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date birthDate;
     @Nullable
+    @ManyToOne
     private STUDY_GROUP studyGroup;
 }

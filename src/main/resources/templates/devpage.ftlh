@@ -8,35 +8,12 @@
     <title>devpage</title>
 </head>
 <body>
-    <form action="/dev/adduser" method="post" style="padding: 10px; border-style: solid; border-radius: 5px; border-width: 1px">
-        <h3 style="margin: 0 auto">Добавление пользователя в обход системы</h3>
-        <div style="display: flex">
-            <div style="display: flex; flex-direction: row">
-                Логин <input id="username" required name="login">
-                <div id="usernameFeedback"></div>
-            </div>
-            Пароль <input required name="password"><br/>
-            Имя <input required name="name"><br/>
-            Фамилия <input required name="surname"><br/>
-            Роль <select name="role">
-                <#if userRoles??>
-                    <#list userRoles as ur>
-                        <option value="${ur}">${ur}</option>
-                    </#list>
-                </#if>
-            </select>
-        </div>
-        <summary>
-            <details>
-                Отчество <input name="patronymic">
-                DOB <input type="date" name="birthDate">
-            </details>
-        </summary>
-        <button id="addusersubmit" type="submit">Добавить</button>
-    </form>
+
+    <br/><br/>
+    <a style="margin: 10px; font-size: large" href="/dev/userlist">Список пользователей</a>
     <a href="/dev/addtopic">Добавить тему</a>
     <a href="/dev/addteam">Создать команду</a>
-    <a href="/dev/userlist">Список пользователей</a>
+
     <a href="/dev/topiclist">Список тем</a>
     <a href="/dev/teamlist">Список команд</a>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
