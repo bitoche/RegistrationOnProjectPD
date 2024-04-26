@@ -10,6 +10,8 @@ import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserService;
 import ru.bitoche.registrationonproject.services.TopicService;
 
+import java.security.Principal;
+
 @Controller
 @AllArgsConstructor
 @RequestMapping("/dev")
@@ -29,14 +31,17 @@ public class DevController {
         return "redirect:userlist";
     }
     @GetMapping("/userlist")
-    public String userlist(Model m){
+    public String userlist(Principal principal, Model m){
+        if(principal!=null){
+            m.addAttribute("user", userService.getByLogin(principal.getName()));
+        }
         m.addAttribute("users", userService.getAll());
         m.addAttribute("userRoles", USER_ROLE.values());
         m.addAttribute("studyGroups", userService.getAllStudyGroups());
         m.addAttribute("studyCourses", userService.getAllStudyCourses());
         return "dev/userlist";
     }
-    @PostMapping("/dev/users/delete/{userId}")
+    @GetMapping("/users/delete/{userId}")
     @ResponseBody
     public String deleteUser(@PathVariable Long userId) {
         // Здесь происходит удаление пользователя с указанным userId

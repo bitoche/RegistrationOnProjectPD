@@ -27,10 +27,11 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="form-container">
-                <h2 class="mb-4">Регистрация</h2>
+                <h2 class="mb-4" style="margin-bottom: 0!important;">Регистрация</h2>
+                <label style="color: gray">Уже есть аккаунт? <a style="text-decoration: none" href="/login">Войти</a></label>
                 <form id="registrationForm" method="post" action="/users/register">
                     <div class="form-group">
-                        <label for="username">Логин</label>
+                        <label for="username">Логин <label style="color: red">*</label></label>
                         <input
                                 type="text"
                                 class="form-control"
@@ -41,7 +42,7 @@
                         <div id="usernameFeedback"></div>
                     </div>
                     <div class="form-group">
-                        <label for="password">Пароль</label>
+                        <label for="password">Пароль <label style="color: red">*</label></label>
                         <input
                                 type="password"
                                 class="form-control"
@@ -51,7 +52,7 @@
                         />
                     </div>
                     <div class="form-group">
-                        <label for="confirmPassword">Повторите пароль</label>
+                        <label for="confirmPassword">Повторите пароль <label style="color: red">*</label></label>
                         <input
                                 type="password"
                                 class="form-control"
@@ -61,7 +62,7 @@
                         <div id="passwordMatchFeedback"></div>
                     </div>
                     <div class="form-group">
-                        <label for="firstName">Имя</label>
+                        <label for="firstName">Имя <label style="color: red">*</label></label>
                         <input
                                 type="text"
                                 class="form-control"
@@ -71,7 +72,7 @@
                         />
                     </div>
                     <div class="form-group">
-                        <label for="lastName">Фамилия</label>
+                        <label for="lastName">Фамилия <label style="color: red">*</label></label>
                         <input
                                 type="text"
                                 class="form-control"
@@ -98,14 +99,26 @@
                         <select class="form-control" id="group" name="studyGroup">
                             <#if allStudyGroups??>
                                 <option selected value="">не выбрано</option>
-                                <#list allStudyGroups as gr>
-                                    <option value="${gr}">${gr}</option>
-                                </#list>
+                                <#if allStudyCourses??>
+                                    <#list allStudyCourses?sort as course>
+                                        <optgroup label="${course} курс">
+                                            <#list allStudyGroups?sort as gr>
+                                                <#if gr.course == course>
+                                                    <option value="${gr.getId()}">${gr.getName()}</option>
+                                                </#if>
+                                            </#list>
+                                        </optgroup>
+                                    </#list>
+                                </#if>
+
                             </#if>
                         </select>
                     </div>
                     <button type="submit" disabled class="btn btn-primary">
                         Зарегистрироваться
+                    </button>
+                    <button style="right: 100%" onclick="gotoMain()" class="btn btn-danger">
+                        Отмена
                     </button>
                 </form>
             </div>
@@ -117,6 +130,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+    function gotoMain(){
+        document.location.href = '/';
+    }
     $(document).ready(function () {
         // AJAX check for username availability
         $("#username").on("input", function () {

@@ -21,6 +21,6 @@ public class TopicCreateRequest {
     private String topicName;
     private String topicDescription;
     private Date RequestDate;
-    @OneToOne
+    @ManyToOne
     private AppUser RequestingUser;
 }

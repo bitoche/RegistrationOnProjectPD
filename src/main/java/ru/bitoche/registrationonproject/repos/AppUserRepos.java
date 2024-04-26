@@ -8,6 +8,6 @@ import ru.bitoche.registrationonproject.models.AppUser;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-public interface AppUserRepos extends JpaRepository<AppUser, Long> {
+public interface AppUserRepos extends CrudRepository<AppUser, Long> {
     Optional<AppUser> findByLogin(String login);
 }

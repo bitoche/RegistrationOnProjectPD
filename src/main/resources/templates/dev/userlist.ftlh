@@ -21,8 +21,10 @@
             background-color: #f2f2f2; /* Делаем каждый четный столбец серым */
         }
     </style>
+    <link type="text/css" rel="stylesheet" href="/css/main-navbar.css"/>
 </head>
 <body>
+<#include "*/schemes/navbar.ftl">
     <a href="/dev/">Вернуться назад</a>
     <form action="/dev/adduser" method="post" style="padding: 10px; border-style: solid; border-radius: 5px; border-width: 1px">
         <h3 style="margin: 0 auto">Добавление пользователя в обход системы</h3>
@@ -136,11 +138,12 @@
             if (result) {
                 // Отправка AJAX-запроса на сервер для удаления пользователя
                 $.ajax({
-                    url: "/dev/users/delete/" +userId,
-                    type: "POST",
+                    url: "/dev/users/delete/"+userId,
+                    type: "GET",
                     success: function(response) {
                         if (response === "success") {
                             alert("Пользователь успешно удален.");
+                            document.location.href = '/dev/userlist';
                         } else {
                             alert("Ошибка при удалении пользователя.");
                         }

@@ -7,15 +7,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
@@ -43,12 +42,12 @@ public class SecurityConfig extends WebSecurityConfiguration {
                 .authorizeHttpRequests(
                         Objects.requireNonNull(authorizeHttpRequests ->
                                 authorizeHttpRequests.
-                                        requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                                        .permitAll().
+                                        requestMatchers("/css/**", "/js/**", "/svg/**").permitAll().
                                         requestMatchers("/", "/check-username", "/users/login", "/users/register", "/users/login-error", "/login").permitAll().
                                         requestMatchers("/dev/**", "/dev").hasAuthority(USER_ROLE.DEV.name()).
                                         requestMatchers("/users/profile/**", "/teams/profile/**", "/users/logout").authenticated().
-                                        requestMatchers("/adm/**").hasAuthority(USER_ROLE.MAIN_ADMIN.name()).
+                                        requestMatchers("/adm/m/**").hasAuthority(USER_ROLE.MAIN_ADMIN.name()).
+                                        requestMatchers("/adm/**", "/adm").hasAnyAuthority(USER_ROLE.ADMIN.name(), USER_ROLE.MAIN_ADMIN.name()).
                                         anyRequest().authenticated())
 
                 )

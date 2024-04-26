@@ -2,13 +2,10 @@ package ru.bitoche.registrationonproject.services;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.bitoche.registrationonproject.models.Team;
-import ru.bitoche.registrationonproject.models.Topic;
-import ru.bitoche.registrationonproject.models.TopicRequest;
+import ru.bitoche.registrationonproject.models.*;
 import ru.bitoche.registrationonproject.models.dtos.TeamTopicDTO;
 import ru.bitoche.registrationonproject.models.dtos.TopicDTO;
-import ru.bitoche.registrationonproject.repos.TeamRepos;
-import ru.bitoche.registrationonproject.repos.TopicRepos;
+import ru.bitoche.registrationonproject.repos.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +16,9 @@ import java.util.Objects;
 public class TopicService {
     private TopicRepos topicRepos;
     private TeamRepos teamRepos;
+    private TopicCreateRequestStatusRepos tcrsRepos;
+    private TopicCreateRequestRepos tcrRepos;
+    private TopicRequestRepos topicRequestRepos;
     private List<TeamTopicDTO> checkBooked(){
         List<TeamTopicDTO> output = new ArrayList<>();
         for (Team team:
@@ -62,5 +62,18 @@ public class TopicService {
             output.add(dto);
         }
         return output;
+    }
+
+    public List<TopicCreateRequest> tcrGetAll(){
+        return (List<TopicCreateRequest>) tcrRepos.findAll();
+    }
+    public List<TopicRequest> topicRequestsGetAll(){
+        return (List<TopicRequest>) topicRequestRepos.findAll();
+    }
+    public void saveTCR(TopicCreateRequest topicCreateRequest){
+        tcrRepos.save(topicCreateRequest);
+    }
+    public void save(Topic topic){
+        topicRepos.save(topic);
     }
 }

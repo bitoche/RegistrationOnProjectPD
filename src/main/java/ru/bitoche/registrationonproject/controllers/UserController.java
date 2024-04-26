@@ -5,11 +5,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.bitoche.registrationonproject.models.AppUser;
+import ru.bitoche.registrationonproject.models.TopicCreateRequest;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserService;
 import ru.bitoche.registrationonproject.services.TopicService;
 
 import java.security.Principal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,8 +45,20 @@ public class UserController {
 
     @PostMapping("/users/register")
     public String addUser(@ModelAttribute("appUser") AppUser appUser){
-        appUser.setRole(USER_ROLE.STANDARD);
+        appUser.setRole(USER_ROLE.STUDENT);
         userService.addUser(appUser);
+        return "redirect:/";
+    }
+
+    @PostMapping("/users/topicCreateRequest")
+    public String createTopicRequest(Long userId, String topicName, String topicDesc){
+        TopicCreateRequest topicCreateRequest = new TopicCreateRequest();
+        topicCreateRequest.setTopicName(topicName);
+        topicCreateRequest.setRequestDate(new Date());
+        topicCreateRequest.setRequestingUser(userService.getById(userId));
+        topicCreateRequest.setTopicDescription(topicDesc);
+        topicService.saveTCR(topicCreateRequest);
+        //todo добавть создание статуса заявки
         return "redirect:/";
     }
 

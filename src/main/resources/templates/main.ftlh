@@ -71,35 +71,19 @@
             text-align: center;
         }
     </style>
+    <link type="text/css" rel="stylesheet" href="/css/main-navbar.css"/>
 </head>
 <body>
-<div class="nav">
-    <div class="user-info">
+<#include "schemes/navbar.ftl">
+<div class="main-topics-container">
     <#if user??>
-        <a href="/users/profile/${user.getId()}">${user.getSurname()} ${user.getName()}</a>
-        <form method="post" action="/users/logout"><input type="submit" value="Выйти"></form>
-        <#else >
-            <a href="/login">Войти</a>
-            <a href="/users/register">Зарегистрироваться</a>
-    </#if>
-    </div>
-    <#if user??>
-        <#if user.getRole().MAIN_ADMIN??>
-            <div class="adm-func">
-                кнопка главного админа
-            </div>
-        </#if>
-        <#if user.getRole().name()=="DEV">
-            <div class="adm-func">
-                <a href="/dev/">Панель управления</a>
-            </div>
+        <#if user.getRole().name()=="MAIN_ADMIN"||user.getRole().name()=="ADMIN">
+            <a href="/adm/requests">Запросы</a>
         </#if>
     </#if>
 
-</div>
-<div class="main-topics-container">
     <#if allTopics??>
-        <#if allTopics? has_content>
+        <#if allTopics?has_content>
             <#list allTopics as topic>
                 <div class="topic-list-element">
                     <div class="element-data">

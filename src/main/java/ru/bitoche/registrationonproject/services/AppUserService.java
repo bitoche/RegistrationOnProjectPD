@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.bitoche.registrationonproject.models.AppUser;
 import ru.bitoche.registrationonproject.models.STUDY_GROUP;
+import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.repos.AppUserRepos;
 import ru.bitoche.registrationonproject.repos.StudyGroupRepos;
 
@@ -22,8 +23,10 @@ public class AppUserService {
     public List<AppUser> getAll(){return (List<AppUser>) appUserRepos.findAll();}
     public void update(AppUser user){appUserRepos.save(user);}
     public void updateAll(List<AppUser> users){appUserRepos.saveAll(users);}
-    public boolean deleteById(long id){
-        return appUserRepos.findById(id).isPresent() ? deleteById(id) : false;
+    public void deleteById(long id){
+        if(appUserRepos.findById(id).isPresent()){
+            appUserRepos.deleteById(id);
+        }
     }
     public AppUser getById(long id){
         if(appUserRepos.findById(id).isPresent())
@@ -63,5 +66,16 @@ public class AppUserService {
             }
         }
         return output;
+    }
+    public boolean changeRole(long id, String role){
+        if(getById(id)!=null){
+            var user = getById(id);
+            System.out.println("Смена роли (id="+id+";role="+user.getRole()+") на "+USER_ROLE.valueOf(role));
+            user.setRole(USER_ROLE.valueOf(role));
+            update(user);
+            return true;
+        }
+        else return false;
+
     }
 }
