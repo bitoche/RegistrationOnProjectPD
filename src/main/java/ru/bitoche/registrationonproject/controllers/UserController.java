@@ -1,6 +1,7 @@
 package ru.bitoche.registrationonproject.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -137,6 +138,13 @@ public class UserController {
             return "redirect:/";
         }
         else return null;
+    }
+    @PostMapping("/team/changeRole")
+    public String changeMemberRole(long myId, long memberId, String newRole, long teamId){
+        if(teamService.getTeamMemberByUserIdAndTeamId(myId, teamId).getRole()!=TEAM_ROLE.STANDARD){
+            teamService.changeTMRoleByTMId(memberId, TEAM_ROLE.valueOf(newRole));
+        }
+        return "redirect:/team/"+teamId;
     }
 
 }

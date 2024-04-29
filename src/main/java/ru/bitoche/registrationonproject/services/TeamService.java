@@ -181,5 +181,14 @@ public class TeamService {
         teamRepos.deleteById(teamId);
 
     }
+    public TeamMember getTeamMemberById(long id){
+        return teamMemberRepos.findById(id).get();
+    }
+    public void changeTMRoleByTMId(long tmId, TEAM_ROLE toRole){
+        var currTM = getTeamMemberById(tmId);
+        currTM.setRole(toRole);
+        teamMemberRepos.save(currTM);
+        System.out.println("LOG\tsuccessful changed role\t"+currTM.getId()+" to "+toRole);
+    }
 
 }

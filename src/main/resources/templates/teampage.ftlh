@@ -74,19 +74,21 @@
                 <td>в команде с ${member.getDate()?date}</td>
                 <#if amIMain>
                     <td>
-                    <form method="post" action="/team/changeRole">
-                        <input hidden name="myRole" value="${member.getRole()}">
-                        <input hidden name="memberId" value="${member.getId()}">
-                        <#if member.getRole()!="CREATOR">
-                            <select name="newRole" required onchange="this.submit">
-                                <#if allTeamRoles?? && allTeamRoles?has_content>
-                                    <#list allTeamRoles as teamRole>
-                                        <option value="${teamRole.name()}" <#if teamRole.name()=="CREATOR">disabled</#if><#if teamRole.name()==member.getRole().name()>selected</#if>>${teamRole.name()}</option>
-                                    </#list>
-                                </#if>
-                            </select>
-                        </#if>
-                    </form></td>
+                        <form id="changeRoleForm_${member.getId()}" method="post" action="/team/changeRole">
+                            <input hidden name="myId" value="${user.getId()}">
+                            <input hidden name="memberId" value="${member.getId()}">
+                            <input hidden name="teamId" value="${currTeam.getId()}">
+                            <#if member.getRole()!="CREATOR">
+                                <select id="toRoleSelect" name="newRole" onchange="return changeRole(event, '${member.getMember().getFullName()}')">
+                                    <#if allTeamRoles?? && allTeamRoles?has_content>
+                                        <#list allTeamRoles as teamRole>
+                                            <option value="${teamRole.name()}" <#if teamRole.name()=="CREATOR">disabled</#if><#if teamRole.name()==member.getRole().name()>selected</#if>>${teamRole.name()}</option>
+                                        </#list>
+                                    </#if>
+                                </select>
+                            </#if>
+                        </form>
+                    </td>
                 </#if>
                 <#assign counter+=1>
             </tr>
@@ -102,12 +104,23 @@
     <form id="deleteTeamForm" method="POST" action="/team/delete">
         <input hidden name="teamId" value="${currTeam.getId()}">
         <input hidden name="authedUserId" value="${user.getId()}">
-        <button onclick="return confirmSubmit(event)" type="submit">Распустить команду</button>
+        <button onclick="return confirmDeleteSubmit()" type="submit">Распустить команду</button>
     </form>
 
 </#if>
 <script>
-    function confirmSubmit(event) {
+    function changeRole(event, memberName){
+        event.preventDefault();
+        var form = event.target.form;
+        var result = confirm("Вы уверены, что хотите сменить роль "+memberName+"?");
+
+        if(result){
+            form.submit();
+        } else {
+            return false;
+        }
+    }
+    function confirmDeleteSubmit(event) {
         event.preventDefault(); // Отменить стандартное действие кнопки (отправку формы)
 
         // Вызываем окно подтверждения
