@@ -94,13 +94,16 @@
                         </div>
                         <div class="element-about">
                             <#if topic.approvedUser??>
-                                ${topic.addingDate?date} <label>утвердил: </label><a href="/user/${topic.approvedUser.id}"> ${topic.approvedUser.surname} ${topic.approvedUser.name} <#if topic.approvedUser.patronymic?has_content>${topic.approvedUser.patronymic}</#if></a>
+                                ${topic.addingDate?date} <label>утвердил: </label><a href="/users/profile/${topic.approvedUser.id}"> ${topic.approvedUser.surname} ${topic.approvedUser.name} <#if topic.approvedUser.patronymic?has_content>${topic.approvedUser.patronymic}</#if></a>
                             </#if>
                         </div>
                     </div>
                     <div class="element-actions">
                         <label class="booked-text"><#if topic.booked><p style="color: red">Забронирована командой <br/>"<a href="/team/${topic.bookedTeam.id}">${topic.bookedTeam.name}</a>"</p> <#else ><p style="color: green">Свободна</p></#if></label>
                     </div>
+                    <#if user?? && user.getRole().name()!="STUDENT">
+                        <a href="/adm/deleteTopic/${topic.getId()}">УДАЛЕНИЕ(без подтверждения)</a>
+                    </#if>
                 </div>
             </#list>
         <#else >

@@ -3,6 +3,7 @@
         display: none;
     }
     #topicCreateRequestMenu{
+        transition: 0.5s;
         width: max-content;
         height: max-content;
         position: absolute;

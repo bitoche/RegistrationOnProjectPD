@@ -32,4 +32,11 @@ public class AppUser {
     @Nullable
     @ManyToOne
     private STUDY_GROUP studyGroup;
+    public String getFullName(){
+        String fullName = surname+" "+name+" ";
+        if(patronymic!=null){
+            fullName+=patronymic;
+        }
+        return fullName;
+    }
 }

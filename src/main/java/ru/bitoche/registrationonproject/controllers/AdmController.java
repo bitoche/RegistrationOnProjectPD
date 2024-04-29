@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.bitoche.registrationonproject.models.Topic;
 import ru.bitoche.registrationonproject.models.TopicCreateRequestStatus;
+import ru.bitoche.registrationonproject.models.enums.REQUEST_STATUS;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserService;
 import ru.bitoche.registrationonproject.services.TopicService;
@@ -75,7 +76,24 @@ public class AdmController{
         topic.setAddingDate(new Date());
         topic.setAddingRequest(tcrequest);
         topicService.save(topic);
-        //todo добавить обновление статуса заявки
+        //ставим статус заявки на одобрено без комментариев
+        topicService.changeStatusTCR(REQUEST_STATUS.APPROVED, tcrequest, null);
         return "redirect:/adm/requests";
+    }
+
+    @PostMapping("/reviewTopic")
+    public String reviewTopic(Principal principal, int tcrId, String comm){
+        var tcrequest = topicService.tcrGetAll().stream().filter(tcr->tcr.getId()==tcrId).findFirst().get();
+        topicService.changeStatusTCR(REQUEST_STATUS.REVIEWED, tcrequest, comm);
+        return "redirect:/adm/requests";
+    }
+
+    @GetMapping("/deleteTopic/{topicId}")
+    public String deleteTopic(Principal principal, @PathVariable Long topicId){
+        var userRole = userService.getByLogin(principal.getName()).getRole();
+        if(userRole == USER_ROLE.MAIN_ADMIN || userRole == USER_ROLE.ADMIN || userRole == USER_ROLE.DEV){
+            topicService.deleteTopic(topicId);
+        }
+        return "redirect:/";
     }
 }

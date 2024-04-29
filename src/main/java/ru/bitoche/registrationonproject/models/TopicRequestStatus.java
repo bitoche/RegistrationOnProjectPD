@@ -22,6 +22,6 @@ public class TopicRequestStatus {
     @Nullable
     private String comment;
     @Nullable
-    @OneToOne
+    @ManyToOne
     private AppUser reviewedAdmin;
 }
