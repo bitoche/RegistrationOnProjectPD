@@ -19,6 +19,9 @@
             top:50%;
             left: 50%;
             z-index: 9999;
+            max-height: 100vh;
+            max-width: 100vw;
+            overflow: auto;
         }
         .exit-btn{
             display: flex;

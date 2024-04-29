@@ -96,6 +96,9 @@ public class UserController {
 
         m.addAttribute("user", userService.getByLogin(principal.getName()));
         m.addAttribute("currTeam", teamService.getTeamById(teamId));
+        m.addAttribute("requestsToTeam", teamService.getRequestedInTeamUsers(teamId));
+        m.addAttribute("allTeamRoles", TEAM_ROLE.values());
+        m.addAttribute("amIMain", teamService.amIMainInThisTeam(userService.getByLogin(principal.getName()).getId(),teamId));
         return "teampage";
     }
     @GetMapping("/topic/{topicId}")
@@ -111,6 +114,29 @@ public class UserController {
         System.out.println("СЕРВЕР УСПЕШНО ПОЛУЧИЛ teamId="+teamId+" и userId="+userId);
         teamService.createRequestToTeam(teamId, userId);
         return "redirect:/users/profile/"+userId;
+    }
+    @GetMapping("/team/confirmRequest/{inTeamReqId}")
+    public String confirmInTeamRequest(@PathVariable long inTeamReqId){
+        var currTeam = teamService.getTeamByInTeamRequestId(inTeamReqId);
+        teamService.confirmInTeamRequest(inTeamReqId);
+        return "redirect:/team/"+currTeam.getId();
+    }
+    @GetMapping("team/cancelRequest/{inTeamReqId}")
+    public String cancelInTeamRequest(@PathVariable long inTeamReqId){
+        var currTeam = teamService.getTeamByInTeamRequestId(inTeamReqId);
+        teamService.cancelInTeamRequest(inTeamReqId);
+        return "redirect:/team/"+currTeam.getId();
+    }
+
+    @PostMapping("/team/delete")
+    public String deleteTeam(long teamId, long authedUserId){
+        var authedUser = userService.getById(authedUserId);
+        var team = teamService.getTeamById(teamId);
+        if(teamService.isUserAlreadyInThisTeam(authedUser, team) && teamService.amIMainInThisTeam(authedUserId, teamId)){
+            teamService.deleteTeamById(teamId);
+            return "redirect:/";
+        }
+        else return null;
     }
 
 }

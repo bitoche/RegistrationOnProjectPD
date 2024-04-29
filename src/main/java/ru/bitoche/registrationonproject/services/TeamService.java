@@ -1,11 +1,16 @@
 package ru.bitoche.registrationonproject.services;
 
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.stereotype.Service;
+import ru.bitoche.registrationonproject.models.AppUser;
 import ru.bitoche.registrationonproject.models.Team;
 import ru.bitoche.registrationonproject.models.TeamMember;
 import ru.bitoche.registrationonproject.models.TeamRequest;
 import ru.bitoche.registrationonproject.models.dtos.TeamTeamRequestDTO;
+import ru.bitoche.registrationonproject.models.enums.TEAM_ROLE;
 import ru.bitoche.registrationonproject.repos.TeamMemberRepos;
 import ru.bitoche.registrationonproject.repos.TeamRepos;
 import ru.bitoche.registrationonproject.repos.TeamRequestRepos;
@@ -14,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -66,6 +72,12 @@ public class TeamService {
     public List<TeamRequest> getAllTeamRequests(){
         return (List<TeamRequest>) teamRequestRepos.findAll();
     }
+    public boolean isUserAlreadyInThisTeam(AppUser user, Team team){
+        if(getTeamMemberByUserIdAndTeamId(user.getId(), team.getId())!=null){
+            return true;
+        }
+        return false;
+    }
     public List<TeamTeamRequestDTO> getAllTeamTeamRequests(long userId){
         var requester = userService.getById(userId);
         List<TeamTeamRequestDTO> out = new ArrayList<>();
@@ -75,13 +87,16 @@ public class TeamService {
             ttrDTO.setTeam(team);
             ttrDTO.setAppUser(requester);
             ttrDTO.setRequested(false);
-            /*todo проверка, не находится ли user в этой команде?
-             *  если да, то дальше ничего не делаем, setRequested=true */
-            for (TeamRequest tr:
-                    getAllTeamRequests()) {
-                if(Objects.equals(tr.getTeam().getId(), team.getId())){
-                    if(Objects.equals(tr.getRequestingUser().getId(), requester.getId())){
-                        ttrDTO.setRequested(true);
+            if(isUserAlreadyInThisTeam(requester, team)){
+                ttrDTO.setRequested(true);
+            }
+            else{
+                for (TeamRequest tr:
+                        getAllTeamRequests()) {
+                    if(Objects.equals(tr.getTeam().getId(), team.getId())){
+                        if(Objects.equals(tr.getRequestingUser().getId(), requester.getId())){
+                            ttrDTO.setRequested(true);
+                        }
                     }
                 }
             }
@@ -95,6 +110,76 @@ public class TeamService {
         tr.setDate(new Date());
         tr.setRequestingUser(userService.getById(userId));
         teamRequestRepos.save(tr);
+    }
+    public List<TeamRequest> getRequestedInTeamUsers(long teamId){
+        return getAllTeamRequests().stream().filter(tr -> tr.getTeam().getId() == teamId).toList();
+    }
+
+    public void confirmInTeamRequest(long inTeamReqId){
+        TeamRequest tr = getAllTeamRequests().stream().filter(t->t.getId()==inTeamReqId).findFirst().get();
+        var trTeam = tr.getTeam();
+        TeamMember newTeamMember = new TeamMember();
+        newTeamMember.setMember(tr.getRequestingUser());
+        newTeamMember.setDate(new Date());
+        newTeamMember.setRole(TEAM_ROLE.STANDARD);
+        saveTeamMember(newTeamMember);//MAIN SAVE IN DB
+        trTeam.addTeamMember(newTeamMember);
+        teamRequestRepos.deleteById(inTeamReqId);
+        teamRepos.save(trTeam);
+    }
+    public void cancelInTeamRequest(long inTeamReqId){
+        teamRequestRepos.deleteById(inTeamReqId);
+    }
+
+    public List<TeamMember> getAllTMsInTeam(){
+        List<TeamMember> out = new ArrayList<>();
+        for (Team t:
+             getAllTeams()) {
+            for (TeamMember tm:
+                 t.getMembers()) {
+                if(!out.contains(tm)){
+                    out.add(tm);
+                }
+            }
+        }
+        return out;
+    }
+
+
+    public Team getTeamByInTeamRequestId(long inTeamReqId){
+        return getAllTeamRequests().stream().filter(tr->tr.getId()==inTeamReqId).findFirst().get().getTeam();
+    }
+    public TeamMember getTeamMemberByUserIdAndTeamId(long userId, long teamId){
+        var allUserTMs = new ArrayList<>(getAllTMsInTeam().stream().filter(tm -> tm.getMember().getId() == userId).toList());
+        var userTeams = getUserTeams(userId);
+        for (Team t:
+             userTeams) {
+            if(t.getId()==teamId){
+                for (TeamMember tm:
+                        allUserTMs) {
+                    if(t.getMembers().contains(tm)){
+                        return tm;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    public Boolean amIMainInThisTeam(long userId, long teamId){
+        if(isUserAlreadyInThisTeam(userService.getById(userId),getTeamById(teamId))){
+            var userTm = getTeamMemberByUserIdAndTeamId(userId, teamId);
+            return userTm.getRole() == TEAM_ROLE.CAPTAIN || userTm.getRole() == TEAM_ROLE.CREATOR;
+        }
+        return false;
+    }
+    @org.hibernate.annotations.OnDelete(action = OnDeleteAction.CASCADE)
+    public void deleteTeamById(long teamId){
+        var teamToDelete = getTeamById(teamId);
+        //каскадное удаление teamMember'ов
+        teamMemberRepos.deleteAll(teamToDelete.getMembers());
+        //
+        teamRepos.deleteById(teamId);
+
     }
 
 }

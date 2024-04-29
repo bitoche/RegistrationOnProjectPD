@@ -1,5 +1,4 @@
 <#--todo добавить сюда кнопку "заявки" со статусами-->
-<#--todo добавить кнопку "группа"-->
 <!doctype html>
 <html lang="ru">
 <head>
@@ -20,7 +19,7 @@
         }
         .exit-btn{
             display: flex;
-            flex-direction: row-reverse;
+            flex-direction: row;
             text-decoration: none;
             color: red;
             padding: 2px;
@@ -42,7 +41,8 @@
             border-style: solid;
             border-color: black;
             margin:2px;
-
+            max-height: 15vw;
+            overflow: auto;
         }
         table {
             border-collapse: collapse; /* Используем collapse, чтобы убрать отступы между ячейками */
@@ -75,8 +75,12 @@
     <#if userTeams??>
         <h3>Команды</h3>
         <div class="user-teams">
-        <#list userTeams?sort as ut>
-            <a href="/team/${ut.getId()}">${ut.getName()}</a>
+            <#assign counter=1>
+        <#list userTeams?sort_by("name") as ut>
+            <label>
+                ${counter}. <a href="/team/${ut.getId()}">${ut.getName()}</a>
+                <#assign counter++>
+            </label>
         </#list>
         </div>
         <#else>
@@ -110,7 +114,7 @@
                             <input hidden name="userId" value="${user.getId()}">
                             <button <#if t.isRequested()>disabled about="Вы уже подали заявку в эту команду"</#if> type="submit">Подать заявку</button>
                         </form>
-                    </td> <#--todo сделать сдесь функцию подачи заявки в команду-->
+                    </td>
 
                 </tr>
             </#list>

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
 import org.springframework.lang.Nullable;
 import ru.bitoche.registrationonproject.models.enums.TEAM_ROLE;
 
@@ -45,5 +47,8 @@ public class Team {
             }
         }
         return false;
+    }
+    public void addTeamMember(TeamMember teamMember){
+        members.add(teamMember);
     }
 }
