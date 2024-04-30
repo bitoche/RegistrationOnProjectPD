@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.bitoche.registrationonproject.models.*;
+import ru.bitoche.registrationonproject.models.dtos.TCR_TCRSDTO;
 import ru.bitoche.registrationonproject.models.dtos.TeamTopicDTO;
 import ru.bitoche.registrationonproject.models.dtos.TopicDTO;
 import ru.bitoche.registrationonproject.models.enums.REQUEST_STATUS;
@@ -74,6 +75,23 @@ public class TopicService {
         var tcrs = (List<TopicCreateRequest>) tcrRepos.findAll();
         return tcrs.stream().toList();
     }
+    public List<TopicCreateRequestStatus> getAllTCRS(){
+        return (List<TopicCreateRequestStatus>) tcrsRepos.findAll();
+    }
+    public TopicCreateRequestStatus getTCRSByTCRId(long tcrId){
+        return getAllTCRS().stream().filter(tcrs->tcrs.getRequest().getId()==tcrId).findFirst().get();
+    }
+    public  List<TCR_TCRSDTO> getAllTCRWithStatuses(){
+        List<TCR_TCRSDTO> out = new ArrayList<>();
+        for (TopicCreateRequest tcr:
+             tcrGetAll()) {
+            TCR_TCRSDTO tcr_tcrs = new TCR_TCRSDTO();
+            tcr_tcrs.setTopicCreateRequest(tcr);
+            tcr_tcrs.setTopicCreateRequestStatus(getTCRSByTCRId(tcr.getId()));
+            out.add(tcr_tcrs);
+        }
+        return out;
+    }
     public List<TopicCreateRequestStatus> tcrsGetAll(){
         return (List<TopicCreateRequestStatus>) tcrsRepos.findAll();
     }
@@ -112,5 +130,8 @@ public class TopicService {
 
     public void deleteTopic(Long topicId){
         topicRepos.delete(getTopicById(topicId));
+    }
+    public int getCountOfActiveCreateRequests(){
+        return getAllTCRWithStatuses().stream().filter(t->t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.CREATED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.REVIEWED).toList().size();
     }
 }

@@ -50,49 +50,109 @@
             left: 50%;
             z-index: 10000;
         }
+        .request-item{
+            display: flex;
+        }
     </style>
     <link type="text/css" rel="stylesheet" href="/css/main-navbar.css"/>
 </head>
 <body>
 <#include "*/schemes/navbar.ftl">
-    <button id="TCRbutton" class="disabled" onclick="showTCRMenu()">Запросы на создание новых тем <small style="color: green;"><#if tcrequests?has_content>+ ${tcrequests?size}</#if></small></button>
+    <button id="TCRbutton" class="disabled" onclick="showTCRMenu()">Запросы на создание новых тем <small style="color: green;"><#if countOfActiveTCR?has_content>+ ${countOfActiveTCR}</#if></small></button>
     <div id="tcrequest_menu" class="full-monitor">
         <a href="#"  class="exit-btn" onclick="showTCRMenu()">Закрыть запросы на создание тем</a>
-        <div class="requests-container">
-            <#if tcrequests??>
-                <#--todo добавить вывод с категориями по группам (статусу TCRS)-->
-                <#if tcrequests?has_content>
-                    <#list tcrequests as tcr>
-                        <div class="request-item">
-                            <label>
-                                Дата запроса:
-                                ${tcr.getRequestDate()?date}
-                            </label>
-                            <label>
-                                Пользователь:
-                                <a href="/user/${tcr.getRequestingUser().getId()}">${tcr.getRequestingUser().getSurname()} ${tcr.getRequestingUser().getName()} ${tcr.getRequestingUser().getPatronymic()}</a>
-                            </label>
-                            <label>
-                                Тема:
-                                <label class="tcr-title">
-                                    ${tcr.getTopicName()}
-                                </label>
-                                <textarea readonly class="tcr-desc">${tcr.getTopicDescription()}</textarea>
-                            </label>
-                            <a href="/adm/approveTopic/${tcr.getId()}">Утвердить</a>
-                            <a href="#review#" onclick="showReviewMenu(${tcr.getId()})" id="reviewBtn-${tcr.getId()}">Оставить комментарий</a>
-                            <div id="hiddenReviewForm-${tcr.getId()}" class="hrf hidden">
-                                <a href="#"  class="exit-btn" onclick="showReviewMenu(${tcr.getId()})">Отменить</a>
-                                <form action="/adm/reviewTopic" method="post">
-                                    <textarea name="comm" style="width: max-content; height: 100px" placeholder="Комментарий"></textarea>
-                                    <input hidden name="tcrId" value="${tcr.getId()}">
-                                    <button type="submit">Отправить</button>
-                                </form>
-                            </div>
-                            <#--todo добавить кнопку отмены с комментарием, и автоматическое изменение статуса заявки-->
-                            <#if tcr_has_next><hr></#if>
-                        </div>
+        <label>
+            По статусу
+            <select name="statusSelect" id="statusSelect">
+                <#if allRequestStatuses?? && allRequestStatuses?has_content>
+                    <option value="">Все</option>
+                    <#list allRequestStatuses as rs>
+                        <option value="${rs.name()}" <#if rs.name()=="CREATED">selected</#if> >
+                            <#if rs.name()=="CREATED">
+                                Создано
+                            </#if>
+                            <#if rs.name()=="REVIEWED">
+                                Просмотрено
+                            </#if>
+                            <#if rs.name()=="REJECTED">
+                                Отказано
+                            </#if>
+                            <#if rs.name()=="APPROVED">
+                                Утверждено
+                            </#if>
+                        </option>
                     </#list>
+                </#if>
+            </select>
+        </label>
+
+        <div class="requests-container">
+            <table id="status-data">
+                <tbody>
+            <#if tcrequests??>
+                <#if tcrequests?has_content>
+
+                    <#list tcrequests as tcrtcrs>
+                        <tr>
+                            <td>
+                                <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()=="CREATED">
+                                    <h4 style="color: blue">Создано</h4>
+                                </#if>
+                                <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()=="REVIEWED">
+                                    <h4 style="color: orange">Просмотрено</h4>
+                                </#if>
+                                <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()=="REJECTED">
+                                    <h4 style="color: red">Отказано</h4>
+                                </#if>
+                                <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()=="APPROVED">
+                                    <h4 style="color: green">Утверждено</h4>
+                                </#if>
+                            </td>
+                            <td>
+                                <div class="request-item">
+                                    <div class="item-date">
+                                        <label>
+                                            Дата запроса:
+                                            ${tcrtcrs.getTopicCreateRequest().getRequestDate()?date}
+                                        </label>
+                                    </div>
+                                    <div class="item-requester">
+                                        <label>
+                                            Пользователь:
+                                            <a href="/users/profile/${tcrtcrs.getTopicCreateRequest().getRequestingUser().getId()}">${tcrtcrs.getTopicCreateRequest().getRequestingUser().getSurname()} ${tcrtcrs.getTopicCreateRequest().getRequestingUser().getName()} ${tcrtcrs.getTopicCreateRequest().getRequestingUser().getPatronymic()}</a>
+                                        </label>
+                                    </div>
+                                    <div class="item-title">
+
+                                        <label class="tcr-title">
+                                            Тема:
+                                            ${tcrtcrs.getTopicCreateRequest().getTopicName()}
+                                        </label>
+                                    </div>
+                                    <div class="item-desc">
+                                        <textarea readonly class="tcr-desc">${tcrtcrs.getTopicCreateRequest().getTopicDescription()}</textarea>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()!="APPROVED"&&tcrtcrs.getTopicCreateRequestStatus().getStatus()!="REJECTED">
+                                    <a href="/adm/approveTopic/${tcrtcrs.getTopicCreateRequest().getId()}">Утвердить</a>
+                                    <a href="#review#" onclick="showReviewMenu(${tcrtcrs.getTopicCreateRequest().getId()})" id="reviewBtn-${tcrtcrs.getTopicCreateRequest().getId()}">Оставить комментарий</a>
+                                    <div id="hiddenReviewForm-${tcrtcrs.getTopicCreateRequest().getId()}" class="hrf hidden">
+                                        <a href="#"  class="exit-btn" onclick="showReviewMenu(${tcrtcrs.getTopicCreateRequest().getId()})">Отменить</a>
+                                        <form action="/adm/reviewTopic" method="post">
+                                            <textarea name="comm" style="width: max-content; height: 100px" placeholder="Комментарий"></textarea>
+                                            <input hidden name="tcrId" value="${tcrtcrs.getTopicCreateRequest().getId()}">
+                                            <button type="submit">Отправить</button>
+                                        </form>
+                                    </div>
+                                <#--todo добавить кнопку отмены с комментарием, и автоматическое изменение статуса заявки-->
+                                </#if>
+                            </td>
+                        </tr>
+                    </#list>
+                    </tbody>
+                    </table>
                 <#else>
                     Здесь пока ничего нет.
                 </#if>
@@ -140,6 +200,53 @@
             var reviewBtn = document.getElementById(`reviewBtn-`+tcrId);
             reviewMenu.classList.toggle('hidden');
             reviewBtn.classList.toggle('disabled');
+        }
+        document.addEventListener("DOMContentLoaded", function() {
+            var statusSelect = document.getElementById("statusSelect");
+            var createdOption = statusSelect.querySelector("option[value='CREATED']");
+            createdOption.selected = true; // Устанавливаем атрибут selected для элемента <option> с value="CREATED"
+
+            statusSelect.addEventListener("change", function() {
+                var selectedStatus = statusSelect.value; // Получаем выбранное значение из <select>
+                filterTableByStatus(selectedStatus); // Вызываем функцию для фильтрации таблицы
+            });
+
+            // Вызываем функцию для фильтрации таблицы сразу после загрузки страницы
+            filterTableByStatus("CREATED");
+        });
+
+        function filterTableByStatus(selectedStatus) {
+            var rows = document.querySelectorAll("#status-data tbody tr"); // Получаем все строки таблицы
+            rows.forEach(function(row) {
+                var statusCell = row.querySelector("td:first-child"); // Получаем ячейку со статусом (первая ячейка в строке)
+                var statusText = statusCell.innerText.trim(); // Получаем текст статуса из ячейки
+
+                // Получаем соответствующее значение статуса для отображаемого текста
+                var statusValue = getStatusValue(statusText);
+
+                // Если выбрано значение "Не выбрано" или выбранное значение соответствует значению статуса в текущей строке, то строка отображается, иначе скрывается
+                if (!selectedStatus || statusValue === selectedStatus) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Функция для получения значения статуса по отображаемому тексту
+        function getStatusValue(statusText) {
+            switch(statusText) {
+                case "Создано":
+                    return "CREATED";
+                case "Просмотрено":
+                    return "REVIEWED";
+                case "Отказано":
+                    return "REJECTED";
+                case "Утверждено":
+                    return "APPROVED";
+                default:
+                    return "";
+            }
         }
     </script>
 </body>

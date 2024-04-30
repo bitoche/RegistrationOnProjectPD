@@ -62,8 +62,10 @@ public class AdmController{
         if(principal!=null){
             m.addAttribute("user", userService.getByLogin(principal.getName()));
         }
-        m.addAttribute("tcrequests", topicService.tcrGetAll());
-        m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());
+        m.addAttribute("tcrequests", topicService.getAllTCRWithStatuses());
+        m.addAttribute("allRequestStatuses", REQUEST_STATUS.values());
+        m.addAttribute("countOfActiveTCR", topicService.getCountOfActiveCreateRequests());
+        m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());//todo сделать их  (m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());)
         return "adm/requests";
     }
     @GetMapping("/approveTopic/{tcrId}")
