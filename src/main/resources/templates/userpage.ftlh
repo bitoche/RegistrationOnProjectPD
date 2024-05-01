@@ -6,7 +6,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>${userData.getSurname()} ${userData.getName()}</title>
+    <title><#if userData.getId()==user.getId()>Мой профиль - РНП <#else>${userData.getFullName()} - РНП</#if> </title>
     <link type="text/css" rel="stylesheet" href="/css/main-navbar.css"/>
     <style>
         .disabled {
@@ -43,6 +43,8 @@
             margin:2px;
             max-height: 15vw;
             overflow: auto;
+            z-index: 10001;
+
         }
         table {
             border-collapse: collapse; /* Используем collapse, чтобы убрать отступы между ячейками */
@@ -62,17 +64,132 @@
             margin-bottom: 10px;
             flex-direction: column;
         }
+        .userRequestsButton{
+            position: absolute;
+            left: 2%;
+            top:10%;
+            background: #fff;
+            border-radius: 5px;
+            margin:2px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            border: 1px solid black;
+            padding: 4px;
+            font-size: small;
+        }
+        .two-column-rl{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tcrstable{
+            position: absolute;
+            max-height: 40vw;
+            max-width: 66vw;
+            transform: translate(-50%, -50%);
+            background-color: #c2c2c2;
+            padding: 20px;
+            border: 1px solid #000000;
+            top:50%;
+            left: 50%;
+            z-index: 10000;
+            overflow: auto;
+        }
+        .userRequestsButtonImage{
+            width: 30px;
+        }
     </style>
 </head>
 <body>
 <#include "schemes/navbar.ftl">
 <h1 style="text-align: center">Пользователь ${userData.getFullName()}</h1>
-<h3>Данные</h3>
-    Роль: ${userData.getRole().name()}<br/>
-    Полное имя: ${userData.getFullName()}<br/>
-    <#if userData.getBirthDate()??>Дата рождения: ${userData.getBirthDate()}<br/></#if>
-    <#if userData.getStudyGroup()??>Учебная группа: ${userData.getStudyGroup().getName()}<br/></#if>
-    <#if userTeams??>
+<div class="two-column-rl">
+    <h3>Данные</h3>
+    <#if user.getLogin()==userData.getLogin()>
+        <div class="userRequestsButton" onclick="showHiddenForm('TCRSTable')" id="openingBtn+TCRSTable">
+            <div>Мои запросы</div>
+            <div><img  class="userRequestsButtonImage" src="https://icon-icons.com/icons2/1769/PNG/512/4092561-email-envelope-mail-message-mobile-ui-ui-website_114031.png"></div>
+        </div>
+        <div id="hiddenMenu+TCRSTable" class="tcrstable hidden">
+            <a href="#"  class="exit-btn" onclick="showHiddenForm('TCRSTable')">Закрыть мои заявки на создание тем</a>
+            <table id="tcr-s-table">
+                <thead>
+                <tr>
+                    <td>№</td>
+                    <td>Статус</td>
+                    <td>Дата подачи заявки</td>
+                    <td>Дата изменения статуса</td>
+                    <td>Название темы</td>
+                    <td>Описание темы</td>
+                    <td>Комментарий модератора</td>
+                    <td>Действие</td>
+                </tr>
+                </thead>
+                <tbody>
+                <#if userRequests?? && userRequests?has_content && user.getLogin()==userData.getLogin()>
+                    <#if userRequests.getTcrTcrsDTOList()?? && userRequests.getTcrTcrsDTOList()?has_content>
+                        <#assign ctr=1>
+                        <#list userRequests.getTcrTcrsDTOList() as tcr_s>
+                            <tr>
+                                <form method="post" action="/users/editRequest">
+                                    <td>${ctr?number}</td>
+                                    <td>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getStatus()=="CREATED">
+                                            <h4 style="color: blue">Создано</h4>
+                                        </#if>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getStatus()=="REVIEWED">
+                                            <h4 style="color: orange">Просмотрено</h4>
+                                        </#if>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getStatus()=="REJECTED">
+                                            <h4 style="color: red">Отказано</h4>
+                                        </#if>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getStatus()=="APPROVED">
+                                            <h4 style="color: green">Утверждено</h4>
+                                        </#if>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getStatus()=="RESUBMITTED">
+                                            <h4 style="color: blueviolet">Повторно отправлено</h4>
+                                        </#if>
+                                    </td>
+                                    <td>${tcr_s.getTopicCreateRequest().getRequestDate()?date}</td>
+                                    <td>${tcr_s.getTopicCreateRequestStatus().getDate()?date}</td>
+                                    <td><input required name="editedTitle" value="${tcr_s.getTopicCreateRequest().getTopicName()}"></td>
+                                    <td><textarea style="max-width: 19vw" required name="editedDesc">${tcr_s.getTopicCreateRequest().getTopicDescription()}</textarea></td>
+                                    <input hidden name="tcrId" value="${tcr_s.getTopicCreateRequest().getId()}">
+                                    <input hidden name="userId" value="${user.getId()}">
+                                    <td>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getComment()??&& tcr_s.getTopicCreateRequestStatus().getComment()?has_content>
+                                            ${tcr_s.getTopicCreateRequestStatus().getComment()}
+                                        </#if>
+                                    </td>
+                                    <td>
+                                        <#if tcr_s.getTopicCreateRequestStatus().getStatus()!="APPROVED"&&tcr_s.getTopicCreateRequestStatus().getStatus()!="REJECTED">
+                                            <button type="submit">Отправить повторно</button>
+                                        </#if>
+                                    </td>
+                                </form>
+                            </tr>
+                            <#assign ctr++>
+                        </#list>
+                    </#if>
+                </#if>
+                </tbody>
+            </table>
+        </div>
+    </#if>
+
+</div>
+
+Роль: ${userData.getRole().name()}<br/>
+Полное имя: ${userData.getFullName()}<br/>
+<#if userData.getBirthDate()??>Дата рождения: ${userData.getBirthDate()}<br/></#if>
+<#if userData.getStudyGroup()??>Учебная группа: ${userData.getStudyGroup().getName()}<br/></#if>
+
+
+
+<#if userTeams??>
+
         <h3>Команды</h3>
         <div class="user-teams">
             <#assign counter=1>
@@ -88,7 +205,7 @@
     </#if>
 <#if user.getId()==userData.getId()>
     <a id="requestToTeamFormButton" onclick="showRTTF()" class="actionBtn">Подать заявку в группу</a>
-    <div id="rttfMenu" class="teamrequestdiv hidden">
+    <div id="rttfMenu" class="teamrequestdiv hidden" style="background: #fff!important;" >
         <a href="#"  class="exit-btn" onclick="showRTTF()">Закрыть меню</a>
         <label>
             Поиск по названию команды
@@ -143,6 +260,12 @@
         var RTTFButton = document.getElementById('requestToTeamFormButton');
         rttfMenu.classList.toggle('hidden');
         RTTFButton.classList.toggle('disabled');
+    }
+    function showHiddenForm(formName){
+        var hiddenMenu = document.getElementById('hiddenMenu+'+formName);
+        var openingButton=document.getElementById('openingBtn+'+formName);
+        hiddenMenu.classList.toggle('hidden');
+        openingButton.classList.toggle('disabled');
     }
     function showRTCTF(){
         var rtctfMenu = document.getElementById('rtctfMenu');

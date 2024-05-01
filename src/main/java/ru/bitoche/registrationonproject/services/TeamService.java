@@ -9,6 +9,7 @@ import ru.bitoche.registrationonproject.models.AppUser;
 import ru.bitoche.registrationonproject.models.Team;
 import ru.bitoche.registrationonproject.models.TeamMember;
 import ru.bitoche.registrationonproject.models.TeamRequest;
+import ru.bitoche.registrationonproject.models.dtos.AllUserRequestsDTO;
 import ru.bitoche.registrationonproject.models.dtos.TeamTeamRequestDTO;
 import ru.bitoche.registrationonproject.models.enums.TEAM_ROLE;
 import ru.bitoche.registrationonproject.repos.TeamMemberRepos;
@@ -27,7 +28,8 @@ public class TeamService {
     private TeamMemberRepos teamMemberRepos;
     private TeamRepos teamRepos;
     private TeamRequestRepos teamRequestRepos;
-    private AppUserService userService;
+    private IAppUserService userService;
+    private ITopicService topicService;
 
     public List<TeamMember> getAllTeamMembers(){
         return (List<TeamMember>) teamMemberRepos.findAll();
@@ -189,6 +191,14 @@ public class TeamService {
         currTM.setRole(toRole);
         teamMemberRepos.save(currTM);
         System.out.println("LOG\tsuccessful changed role\t"+currTM.getId()+" to "+toRole);
+    }
+
+    public AllUserRequestsDTO getAllUserRequestsById(long userId){
+        AllUserRequestsDTO out = new AllUserRequestsDTO();
+        out.setTcrTcrsDTOList(topicService.getUserTCR_S(userId));
+        out.setTeamTeamRequestDTOList(getAllTeamTeamRequests(userId));
+        out.setTopicRequestStatusList(null); //todo сделать заявки на взятие темы командой
+        return out;
     }
 
 }

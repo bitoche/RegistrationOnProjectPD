@@ -20,5 +20,8 @@
 <textarea readonly style="width: 500px; height: 300px">${currTopic.getDescription()}</textarea><br/>
 Дата добавления: ${currTopic.getAddingDate()}<br/>
 Утвердил: <a href="/users/profile/${currTopic.getApprovedUser().getId()}">${currTopic.getApprovedUser().getFullName()}</a><br/>
+<#if currTopic.getAddingRequest().getRequestingUser()?has_content??>
+    Предложена : <a href="/users/profile/${currTopic.getAddingRequest().getRequestingUser().getId()}">${currTopic.getAddingRequest().getRequestingUser().getFullName()}</a> ${currTopic.getAddingRequest().getRequestDate()} <br/>
+</#if>
 </body>
 </html>

@@ -104,7 +104,7 @@
     <form id="deleteTeamForm" method="POST" action="/team/delete">
         <input hidden name="teamId" value="${currTeam.getId()}">
         <input hidden name="authedUserId" value="${user.getId()}">
-        <button onclick="return confirmDeleteSubmit()" type="submit">Распустить команду</button>
+        <button onclick="return confirmDeleteSubmit(event)" type="submit">Распустить команду</button> <#--НЕ УДАЛЯТЬ EVENT-->
     </form>
 
 </#if>

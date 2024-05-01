@@ -1,7 +1,4 @@
-<#--<style>-->
 
-<#--</style>-->
-<#--здесь был код вывода-->
 <script>
     function showRequests(){
         var inteamRequestsContainer = document.getElementById('in-teamRequestsContainer');

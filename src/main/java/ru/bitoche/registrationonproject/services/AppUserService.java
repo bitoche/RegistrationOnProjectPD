@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.bitoche.registrationonproject.models.AppUser;
 import ru.bitoche.registrationonproject.models.STUDY_GROUP;
+import ru.bitoche.registrationonproject.models.dtos.AllUserRequestsDTO;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.repos.AppUserRepos;
 import ru.bitoche.registrationonproject.repos.StudyGroupRepos;
@@ -15,8 +16,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class AppUserService {
-    @Autowired
+public class AppUserService implements IAppUserService {
     private AppUserRepos appUserRepos;
     private PasswordEncoder passwordEncoder;
     private StudyGroupRepos stgrRepos;
@@ -78,5 +78,7 @@ public class AppUserService {
         else return false;
 
     }
+
+
 
 }

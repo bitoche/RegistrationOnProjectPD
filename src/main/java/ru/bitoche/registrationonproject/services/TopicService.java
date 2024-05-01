@@ -17,13 +17,13 @@ import java.util.Objects;
 
 @Service
 @AllArgsConstructor
-public class TopicService {
+public class TopicService implements ITopicService{
     private TopicRepos topicRepos;
     private TeamRepos teamRepos;
     private TopicCreateRequestStatusRepos tcrsRepos;
     private TopicCreateRequestRepos tcrRepos;
     private TopicRequestRepos topicRequestRepos;
-    private List<TeamTopicDTO> checkBooked(){
+    public List<TeamTopicDTO> checkBooked(){
         List<TeamTopicDTO> output = new ArrayList<>();
         for (Team team:
              teamRepos.findAll()) {
@@ -134,4 +134,9 @@ public class TopicService {
     public int getCountOfActiveCreateRequests(){
         return getAllTCRWithStatuses().stream().filter(t->t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.CREATED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.REVIEWED).toList().size();
     }
+
+    public List<TCR_TCRSDTO> getUserTCR_S(long userId){
+        return getAllTCRWithStatuses().stream().filter(tcr_tcrsdto -> tcr_tcrsdto.getTopicCreateRequest().getRequestingUser().getId()==userId).toList();
+    }
+
 }

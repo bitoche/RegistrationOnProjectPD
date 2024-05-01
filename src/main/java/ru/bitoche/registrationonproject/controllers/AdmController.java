@@ -12,6 +12,8 @@ import ru.bitoche.registrationonproject.models.TopicCreateRequestStatus;
 import ru.bitoche.registrationonproject.models.enums.REQUEST_STATUS;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserService;
+import ru.bitoche.registrationonproject.services.IAppUserService;
+import ru.bitoche.registrationonproject.services.ITopicService;
 import ru.bitoche.registrationonproject.services.TopicService;
 
 import java.security.Principal;
@@ -22,8 +24,8 @@ import java.util.Objects;
 @AllArgsConstructor
 @RequestMapping("/adm")
 public class AdmController{
-    AppUserService userService;
-    TopicService topicService;
+    IAppUserService userService;
+    ITopicService topicService;
     @GetMapping("/userList")
     public String mainAdminMainPage(Principal principal, Model model){
         if(principal!=null){
@@ -68,34 +70,73 @@ public class AdmController{
         m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());//todo сделать их  (m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());)
         return "adm/requests";
     }
+    boolean checkPrincipalPrivileges(Principal p){
+        return userService.getByLogin(p.getName()).getRole().name() == "ADMIN" && userService.getByLogin(p.getName()).getRole().name() != "STUDENT";
+    }
     @GetMapping("/approveTopic/{tcrId}")
-    public String approveTopic(Principal principal, @PathVariable Long tcrId){
-        var tcrequest = topicService.tcrGetAll().stream().filter(tcr->tcr.getId()==tcrId).findFirst().get();
-        Topic topic = new Topic();
-        topic.setApprovedUser(userService.getByLogin(principal.getName()));
-        topic.setName(tcrequest.getTopicName());
-        topic.setDescription(tcrequest.getTopicDescription());
-        topic.setAddingDate(new Date());
-        topic.setAddingRequest(tcrequest);
-        topicService.save(topic);
-        //ставим статус заявки на одобрено без комментариев
-        topicService.changeStatusTCR(REQUEST_STATUS.APPROVED, tcrequest, null);
-        return "redirect:/adm/requests";
+    public String approveTopic(Principal principal, @PathVariable Long tcrId, Model model){
+        if(checkPrincipalPrivileges(principal)){
+            var tcrequest = topicService.tcrGetAll().stream().filter(tcr->tcr.getId()==tcrId).findFirst().get();
+            Topic topic = new Topic();
+            topic.setApprovedUser(userService.getByLogin(principal.getName()));
+            topic.setName(tcrequest.getTopicName());
+            topic.setDescription(tcrequest.getTopicDescription());
+            topic.setAddingDate(new Date());
+            topic.setAddingRequest(tcrequest);
+            topicService.save(topic);
+            //ставим статус заявки на одобрено без комментариев
+            topicService.changeStatusTCR(REQUEST_STATUS.APPROVED, tcrequest, null);
+            return "redirect:/adm/requests";
+        }else {
+            model.addAttribute("comm", "Для утверждения темы ("+tcrId+") необходимо иметь права доступа ADMIN, или MAIN_ADMIN.");
+            model.addAttribute("tit", "access denied");
+            return "error";
+        }
+
     }
 
     @PostMapping("/reviewTopic")
-    public String reviewTopic(Principal principal, int tcrId, String comm){
-        var tcrequest = topicService.tcrGetAll().stream().filter(tcr->tcr.getId()==tcrId).findFirst().get();
-        topicService.changeStatusTCR(REQUEST_STATUS.REVIEWED, tcrequest, comm);
-        return "redirect:/adm/requests";
+    public String reviewTopic(Principal principal, int tcrId, String comm, Model model){
+        if(checkPrincipalPrivileges(principal)){
+            var tcrequest = topicService.tcrGetAll().stream().filter(tcr->tcr.getId()==tcrId).findFirst().get();
+            topicService.changeStatusTCR(REQUEST_STATUS.REVIEWED, tcrequest, comm);
+            return "redirect:/adm/requests";
+        }else {
+            model.addAttribute("comm", "Для изменения темы ("+tcrId+") необходимо иметь права доступа ADMIN, или MAIN_ADMIN.");
+            model.addAttribute("tit", "access denied");
+            return "error";
+        }
+
+    }
+
+    @PostMapping("/declineTopic")
+    public String declineTopic(Principal principal, int tcrId, String comm, Model model){
+        if(checkPrincipalPrivileges(principal)){
+            var tcrequest = topicService.tcrGetAll().stream().filter(tcr->tcr.getId()==tcrId).findFirst().get();
+            topicService.changeStatusTCR(REQUEST_STATUS.REJECTED, tcrequest, comm);
+            return "redirect:/adm/requests";
+        }else {
+            model.addAttribute("comm", "Для отмены заявки создания темы ("+tcrId+") необходимо иметь права доступа ADMIN, или MAIN_ADMIN.");
+            model.addAttribute("tit", "access denied");
+            return "error";
+        }
     }
 
     @GetMapping("/deleteTopic/{topicId}")
-    public String deleteTopic(Principal principal, @PathVariable Long topicId){
-        var userRole = userService.getByLogin(principal.getName()).getRole();
-        if(userRole == USER_ROLE.MAIN_ADMIN || userRole == USER_ROLE.ADMIN || userRole == USER_ROLE.DEV){
-            topicService.deleteTopic(topicId);
+    public String deleteTopic(Principal principal, @PathVariable Long topicId, Model model){
+        if(checkPrincipalPrivileges(principal)){
+            var userRole = userService.getByLogin(principal.getName()).getRole();
+            if(userRole == USER_ROLE.MAIN_ADMIN || userRole == USER_ROLE.ADMIN || userRole == USER_ROLE.DEV){
+                topicService.deleteTopic(topicId);
+            }
+            return "redirect:/";
+            }
+        else {
+        model.addAttribute("comm", "Для удаления темы ("+topicId+") необходимо иметь права доступа ADMIN, или MAIN_ADMIN.");
+        model.addAttribute("tit", "access denied");
+        return "error";
         }
-        return "redirect:/";
     }
+
+
 }

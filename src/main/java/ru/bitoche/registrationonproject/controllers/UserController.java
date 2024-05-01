@@ -9,6 +9,7 @@ import ru.bitoche.registrationonproject.models.AppUser;
 import ru.bitoche.registrationonproject.models.Team;
 import ru.bitoche.registrationonproject.models.TeamMember;
 import ru.bitoche.registrationonproject.models.TopicCreateRequest;
+import ru.bitoche.registrationonproject.models.enums.REQUEST_STATUS;
 import ru.bitoche.registrationonproject.models.enums.TEAM_ROLE;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
 import ru.bitoche.registrationonproject.services.AppUserService;
@@ -66,14 +67,37 @@ public class UserController {
         return "redirect:/";
     }
 
+    @PostMapping("/users/editRequest")
+    public String editTopicRequest(long tcrId, long userId, String editedTitle, String editedDesc, Principal principal, Model model){
+        var currAuthedUser = userService.getByLogin(principal.getName());
+        if(currAuthedUser.getId()!=userId){
+            model.addAttribute("comm", "Не вы владелец этого запроса, не вам его менять xD.");
+            model.addAttribute("tit", "access denied");
+            return "error";
+        }
+        var currTcrs =  topicService.getTCRSByTCRId(tcrId);
+        currTcrs.setDate(new Date());
+        currTcrs.setStatus(REQUEST_STATUS.RESUBMITTED);
+        currTcrs.setComment("");
+        var currTcr = currTcrs.getRequest();
+        currTcr.setTopicDescription(editedDesc);
+        currTcr.setTopicName(editedTitle);
+
+        currTcrs.setRequest(currTcr);
+        topicService.saveTCR(currTcr);
+        topicService.saveTCRS(currTcrs);
+        return "redirect:/users/profile/"+userId;
+    }
+
     @GetMapping("/users/profile/{userId}")
     public String openUserpage(@PathVariable long userId, Model m, Principal principal){
-        m.addAttribute("userData", userService.getById(userId));
+        m.addAttribute("userData", userService.getById(userId)); //CURR
         if (teamService.isUserInTeam(userId)){
             m.addAttribute("userTeams", teamService.getUserTeams(userId));
         }
-        m.addAttribute("user", userService.getByLogin(principal.getName()));
+        m.addAttribute("user", userService.getByLogin(principal.getName())); //AUTHED
         m.addAttribute("allTeamRequests", teamService.getAllTeamTeamRequests(userId));
+        m.addAttribute("userRequests", teamService.getAllUserRequestsById(userId));
         return "userpage";
     }
 
@@ -122,7 +146,7 @@ public class UserController {
         teamService.confirmInTeamRequest(inTeamReqId);
         return "redirect:/team/"+currTeam.getId();
     }
-    @GetMapping("team/cancelRequest/{inTeamReqId}")
+    @GetMapping("/team/cancelRequest/{inTeamReqId}")
     public String cancelInTeamRequest(@PathVariable long inTeamReqId){
         var currTeam = teamService.getTeamByInTeamRequestId(inTeamReqId);
         teamService.cancelInTeamRequest(inTeamReqId);
@@ -141,8 +165,10 @@ public class UserController {
     }
     @PostMapping("/team/changeRole")
     public String changeMemberRole(long myId, long memberId, String newRole, long teamId){
-        if(teamService.getTeamMemberByUserIdAndTeamId(myId, teamId).getRole()!=TEAM_ROLE.STANDARD){
-            teamService.changeTMRoleByTMId(memberId, TEAM_ROLE.valueOf(newRole));
+        if(teamService.getTeamMemberByUserIdAndTeamId(myId, teamId).getRole()!=TEAM_ROLE.STANDARD /*если я не стандарт*/ && teamService.getTeamMemberById(memberId).getRole()!=TEAM_ROLE.CREATOR /*и если меняем не создателя команды*/){
+            if(!Objects.equals(newRole, TEAM_ROLE.CREATOR.name())){
+                teamService.changeTMRoleByTMId(memberId, TEAM_ROLE.valueOf(newRole));
+            }
         }
         return "redirect:/team/"+teamId;
     }

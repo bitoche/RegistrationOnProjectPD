@@ -80,6 +80,9 @@
                             <#if rs.name()=="APPROVED">
                                 Утверждено
                             </#if>
+                            <#if rs.name()=="RESUBMITTED">
+                                Повторно отправлено
+                            </#if>
                         </option>
                     </#list>
                 </#if>
@@ -107,31 +110,45 @@
                                 <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()=="APPROVED">
                                     <h4 style="color: green">Утверждено</h4>
                                 </#if>
+                                <#if tcrtcrs.getTopicCreateRequestStatus().getStatus()=="RESUBMITTED">
+                                    <h4 style="color: blueviolet">Повторно отправлено</h4>
+                                </#if>
                             </td>
                             <td>
-                                <div class="request-item">
-                                    <div class="item-date">
-                                        <label>
-                                            Дата запроса:
-                                            ${tcrtcrs.getTopicCreateRequest().getRequestDate()?date}
-                                        </label>
-                                    </div>
-                                    <div class="item-requester">
-                                        <label>
-                                            Пользователь:
-                                            <a href="/users/profile/${tcrtcrs.getTopicCreateRequest().getRequestingUser().getId()}">${tcrtcrs.getTopicCreateRequest().getRequestingUser().getSurname()} ${tcrtcrs.getTopicCreateRequest().getRequestingUser().getName()} ${tcrtcrs.getTopicCreateRequest().getRequestingUser().getPatronymic()}</a>
-                                        </label>
-                                    </div>
-                                    <div class="item-title">
+                                <div <#if tcrtcrs_has_next>style="border-bottom-style: solid; border-width: 1px"</#if>>
+                                    <div class="request-item">
+                                        <div class="item-date">
+                                            <label>
+                                                Дата запроса:
+                                                ${tcrtcrs.getTopicCreateRequest().getRequestDate()?date}
+                                            </label>
+                                        </div>
+                                        <div class="item-requester">
+                                            <label>
+                                                Пользователь:
+                                                <a href="/users/profile/${tcrtcrs.getTopicCreateRequest().getRequestingUser().getId()}">${tcrtcrs.getTopicCreateRequest().getRequestingUser().getSurname()} ${tcrtcrs.getTopicCreateRequest().getRequestingUser().getName()} ${tcrtcrs.getTopicCreateRequest().getRequestingUser().getPatronymic()}</a>
+                                            </label>
+                                        </div>
+                                        <div class="item-title">
 
-                                        <label class="tcr-title">
-                                            Тема:
-                                            ${tcrtcrs.getTopicCreateRequest().getTopicName()}
-                                        </label>
+                                            <label class="tcr-title">
+                                                Тема:
+                                                ${tcrtcrs.getTopicCreateRequest().getTopicName()}
+                                            </label>
+                                        </div>
+                                        <div class="item-desc">
+                                            <textarea readonly class="tcr-desc">${tcrtcrs.getTopicCreateRequest().getTopicDescription()}</textarea>
+                                        </div>
                                     </div>
-                                    <div class="item-desc">
-                                        <textarea readonly class="tcr-desc">${tcrtcrs.getTopicCreateRequest().getTopicDescription()}</textarea>
-                                    </div>
+                                    <#if tcrtcrs.getTopicCreateRequestStatus().getComment()?? && tcrtcrs.getTopicCreateRequestStatus().getComment()?has_content>
+                                        <div class="request-item">
+                                            <div class="item-comment">
+                                                <label>
+                                                    Комментарий модератора: ${tcrtcrs.getTopicCreateRequestStatus().getComment()}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </#if>
                                 </div>
                             </td>
                             <td>
@@ -141,6 +158,15 @@
                                     <div id="hiddenReviewForm-${tcrtcrs.getTopicCreateRequest().getId()}" class="hrf hidden">
                                         <a href="#"  class="exit-btn" onclick="showReviewMenu(${tcrtcrs.getTopicCreateRequest().getId()})">Отменить</a>
                                         <form action="/adm/reviewTopic" method="post">
+                                            <textarea name="comm" style="width: max-content; height: 100px" placeholder="Комментарий"></textarea>
+                                            <input hidden name="tcrId" value="${tcrtcrs.getTopicCreateRequest().getId()}">
+                                            <button type="submit">Отправить</button>
+                                        </form>
+                                    </div>
+                                    <a href="#decline#" onclick="showDeclineMenu(${tcrtcrs.getTopicCreateRequest().getId()})" id="declineBtn-${tcrtcrs.getTopicCreateRequest().getId()}" style="color: red;">Отказать</a>
+                                    <div id="hiddenDeclineForm-${tcrtcrs.getTopicCreateRequest().getId()}" class="hrf hidden">
+                                        <a href="#"  class="exit-btn" onclick="showDeclineMenu(${tcrtcrs.getTopicCreateRequest().getId()})">Отменить</a>
+                                        <form action="/adm/declineTopic" method="post">
                                             <textarea name="comm" style="width: max-content; height: 100px" placeholder="Комментарий"></textarea>
                                             <input hidden name="tcrId" value="${tcrtcrs.getTopicCreateRequest().getId()}">
                                             <button type="submit">Отправить</button>
@@ -201,6 +227,12 @@
             reviewMenu.classList.toggle('hidden');
             reviewBtn.classList.toggle('disabled');
         }
+        function showDeclineMenu(tcrId){
+            var declineMenu = document.getElementById('hiddenDeclineForm-'+tcrId);
+            var declineBtn = document.getElementById('declineBtn-'+tcrId);
+            declineMenu.classList.toggle('hidden');
+            declineBtn.classList.toggle('disabled');
+        }
         document.addEventListener("DOMContentLoaded", function() {
             var statusSelect = document.getElementById("statusSelect");
             var createdOption = statusSelect.querySelector("option[value='CREATED']");
@@ -244,6 +276,8 @@
                     return "REJECTED";
                 case "Утверждено":
                     return "APPROVED";
+                case "Повторно отправлено":
+                    return "RESUBMITTED"
                 default:
                     return "";
             }
