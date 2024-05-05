@@ -132,7 +132,7 @@ public class TopicService implements ITopicService{
         topicRepos.delete(getTopicById(topicId));
     }
     public int getCountOfActiveCreateRequests(){
-        return getAllTCRWithStatuses().stream().filter(t->t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.CREATED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.REVIEWED).toList().size();
+        return getAllTCRWithStatuses().stream().filter(t->t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.CREATED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.REVIEWED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.RESUBMITTED).toList().size();
     }
 
     public List<TCR_TCRSDTO> getUserTCR_S(long userId){
