@@ -67,6 +67,7 @@ public class AdmController{
         m.addAttribute("tcrequests", topicService.getAllTCRWithStatuses());
         m.addAttribute("allRequestStatuses", REQUEST_STATUS.values());
         m.addAttribute("countOfActiveTCR", topicService.getCountOfActiveCreateRequests());
+        m.addAttribute("countOfAllTypesTCRS", topicService.countEveryTypeOfTCRequests());
         m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());//todo сделать их  (m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());)
         return "adm/requests";
     }

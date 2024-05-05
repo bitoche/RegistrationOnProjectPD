@@ -3,6 +3,7 @@ package ru.bitoche.registrationonproject.services;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.bitoche.registrationonproject.models.*;
+import ru.bitoche.registrationonproject.models.dtos.RequestCountDTO;
 import ru.bitoche.registrationonproject.models.dtos.TCR_TCRSDTO;
 import ru.bitoche.registrationonproject.models.dtos.TeamTopicDTO;
 import ru.bitoche.registrationonproject.models.dtos.TopicDTO;
@@ -33,4 +34,8 @@ public interface ITopicService {
         void deleteTopic(Long topicId);
         int getCountOfActiveCreateRequests();
         List<TCR_TCRSDTO> getUserTCR_S(long userId);
+        //тяжело
+        List<RequestCountDTO> countEveryTypeOfTCRequests();
+        //счетчики
+        int countTCRSByRequestStatus(REQUEST_STATUS status);
 }

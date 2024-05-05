@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.bitoche.registrationonproject.models.*;
+import ru.bitoche.registrationonproject.models.dtos.RequestCountDTO;
 import ru.bitoche.registrationonproject.models.dtos.TCR_TCRSDTO;
 import ru.bitoche.registrationonproject.models.dtos.TeamTopicDTO;
 import ru.bitoche.registrationonproject.models.dtos.TopicDTO;
@@ -40,6 +41,36 @@ public class TopicService implements ITopicService{
         }
         return output;
     }
+    public List<RequestCountDTO> countEveryTypeOfTCRequests(){
+        var statuses = REQUEST_STATUS.values();
+        var tcrses = getAllTCRS();
+        List<RequestCountDTO> outArr = new ArrayList<>();
+        for (REQUEST_STATUS s:
+             statuses) {
+            var dto = new RequestCountDTO(s, 0);
+            for (TopicCreateRequestStatus tcrs:
+                 tcrses) {
+                if(tcrs.getStatus()==s){
+                    dto.setCountOfTCRS(dto.getCountOfTCRS()+1);
+                }
+            }
+            outArr.add(dto);
+        }
+        return outArr;
+    }
+
+    public int countTCRSByRequestStatus(REQUEST_STATUS status) {
+        int ctr=0;
+        for (TopicCreateRequestStatus tcrs:
+             getAllTCRS()) {
+            if(tcrs.getStatus()==status){
+                ctr++;
+            }
+        }
+        return ctr;
+    }
+
+
     public List<TopicDTO> main_getAll(){
         var allTopics = (List<Topic>) topicRepos.findAll();
         List<TopicDTO> output = new ArrayList<>();

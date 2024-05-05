@@ -69,19 +69,39 @@
                     <#list allRequestStatuses as rs>
                         <option value="${rs.name()}" <#if rs.name()=="CREATED">selected</#if> >
                             <#if rs.name()=="CREATED">
-                                Создано
+                                Создано <#if countOfAllTypesTCRS?? && countOfAllTypesTCRS?has_content>
+                                    <#list countOfAllTypesTCRS as cnt>
+                                        <#if cnt.status.name()==rs.name()><small style="color: green">(${cnt.countOfTCRS})</small></#if>
+                                    </#list>
+                                </#if>
                             </#if>
                             <#if rs.name()=="REVIEWED">
-                                Просмотрено
+                                Просмотрено <#if countOfAllTypesTCRS?? && countOfAllTypesTCRS?has_content>
+                                <#list countOfAllTypesTCRS as cnt>
+                                    <#if cnt.status.name()==rs.name()><small style="color: green">(${cnt.countOfTCRS})</small></#if>
+                                </#list>
+                            </#if>
                             </#if>
                             <#if rs.name()=="REJECTED">
-                                Отказано
+                                Отказано <#if countOfAllTypesTCRS?? && countOfAllTypesTCRS?has_content>
+                                <#list countOfAllTypesTCRS as cnt>
+                                    <#if cnt.status.name()==rs.name()><small style="color: green">(${cnt.countOfTCRS})</small></#if>
+                                </#list>
+                            </#if>
                             </#if>
                             <#if rs.name()=="APPROVED">
-                                Утверждено
+                                Утверждено <#if countOfAllTypesTCRS?? && countOfAllTypesTCRS?has_content>
+                                <#list countOfAllTypesTCRS as cnt>
+                                    <#if cnt.status.name()==rs.name()><small style="color: green">(${cnt.countOfTCRS})</small></#if>
+                                </#list>
+                            </#if>
                             </#if>
                             <#if rs.name()=="RESUBMITTED">
-                                Повторно отправлено
+                                Повторно отправлено <#if countOfAllTypesTCRS?? && countOfAllTypesTCRS?has_content>
+                                <#list countOfAllTypesTCRS as cnt>
+                                    <#if cnt.status.name()==rs.name()><small style="color: green">(${cnt.countOfTCRS})</small></#if>
+                                </#list>
+                            </#if>
                             </#if>
                         </option>
                     </#list>
