@@ -27,6 +27,7 @@
         }
         .element-data{
             width: 80%;
+            max-width: 50vw;
             display: flex;
             flex-direction: column;
             align-content: center;
