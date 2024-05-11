@@ -19,6 +19,14 @@ import java.util.Objects;
 public interface ITopicService {
         List<TeamTopicDTO> checkBooked();
         List<TopicDTO> main_getAll();
+        List<TopicRequest> getAllTopicRequests();
+        List<TopicRequestStatus> getAllTopicRequestsStatuses();
+        void approveROT(long rotId);
+        void deleteROTAndROTSByROTSId(long rotsId);
+        void deleteAllTeamROTAndRotsByTeamId(long teamId);
+        TopicRequest getTopicRequestByTeamIdAndTopicId(long teamId, long topicId);
+        void createTopicRequest(long teamId, long topicId);
+        boolean isTopicBooked(long topicId);
         Topic getTopicById(long id);
         List<TopicCreateRequest> tcrGetAll();
         List<TopicCreateRequestStatus> getAllTCRS();
@@ -38,4 +46,6 @@ public interface ITopicService {
         List<RequestCountDTO> countEveryTypeOfTCRequests();
         //счетчики
         int countTCRSByRequestStatus(REQUEST_STATUS status);
+
+        void declineROT(long rotId);
 }

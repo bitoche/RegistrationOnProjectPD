@@ -18,6 +18,8 @@ public class TopicRequestStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private REQUEST_STATUS status;
+    @OneToOne
+    private TopicRequest topicRequest;
     private Date statusDate;
     @Nullable
     private String comment;

@@ -31,7 +31,6 @@
     <a href="#"  class="exit-btn" onclick="showTCRMenu()">Закрыть</a>
     <div class="requests-container">
         <#if tcrequests??>
-        <#--todo добавить вывод при условии что статус еще не "завершена"-->
             <#if tcrequests?has_content>
                 <#list tcrequests as tcr>
                     <div class="request-item">
@@ -51,7 +50,6 @@
                             <textarea readonly class="tcr-desc">${tcr.getTopicDescription()}</textarea>
                         </label>
                         <a href="/adm/approveTopic/${tcr.getId()}">Утвердить</a>
-                        <#--todo добавить кнопку отмены с комментарием, и автоматическое изменение статуса заявки-->
                         <#if tcr_has_next><hr></#if>
                     </div>
                 </#list>

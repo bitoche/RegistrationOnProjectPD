@@ -16,10 +16,11 @@
     <#else>
         <h2 style="color: green">Вы можете забронировать эту тему!</h2>
         <form method="post" action="/topic/createRequest">
-            <input hidden name="requestedUserId" value="${user.getLogin()}">
+            <input hidden name="requestedUserLogin" value="${user.getLogin()}">
+            <input hidden name="requestedTopicId" value="${currTopic.getId()}">
             <label>
                 Выбрите одну из ваших команд<br/>
-                <select required name="selectedTeam">
+                <select required name="selectedTeamId">
                     <option selected value=''>Не выбрано</option>
                     <#if myTeams?? && myTeams?has_content>
                         <#list myTeams as mt>

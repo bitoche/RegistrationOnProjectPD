@@ -53,6 +53,7 @@
         <a onclick="showTopicRequests()" class="exit-btn">Закрыть</a>
         <#if requestsToTeam?? >
             <#if requestsToTeam?has_content>
+                <#--todo сделать здесь вывод моих заявок на тему с возможностью отмены-->
             <#else>
                 Нет поданных заявок.
             </#if>
@@ -60,7 +61,6 @@
             <p style="color: red" onload="alert('Не удалось получить список заявок')">Не удалось получить список заявок</p>
         </#if>
     </div>
-
 </#if>
 <h1 style="text-align: center">Команда "${currTeam.getName()}"</h1>
 <div class="team-data">

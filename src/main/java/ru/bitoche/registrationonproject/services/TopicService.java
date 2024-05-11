@@ -24,6 +24,7 @@ public class TopicService implements ITopicService{
     private TopicCreateRequestStatusRepos tcrsRepos;
     private TopicCreateRequestRepos tcrRepos;
     private TopicRequestRepos topicRequestRepos;
+    private TopicRequestStatusRepos topicRequestStatusRepos;
     public List<TeamTopicDTO> checkBooked(){
         List<TeamTopicDTO> output = new ArrayList<>();
         for (Team team:
@@ -58,7 +59,86 @@ public class TopicService implements ITopicService{
         }
         return outArr;
     }
+    public List<TopicRequest> getAllTopicRequests(){
+        return (List<TopicRequest>) topicRequestRepos.findAll();
+    }
 
+    public List<TopicRequestStatus> getAllTopicRequestsStatuses() {
+        return (List<TopicRequestStatus>) topicRequestStatusRepos.findAll();
+    }
+
+    public void approveROT(long rotId) {
+        //var currROT= getAllTopicRequests().stream().filter(tr->tr.getId()==rotId).findFirst().get();//ищем запрос с таким id
+        var currROTS = getAllTopicRequestsStatuses().stream().filter(trs->trs.getTopicRequest().getId()==rotId).findFirst().get();//ищем статус по этому запросу (ДОЛЖЕН БЫТЬ ВСЕГО ОДИН ТАКОЙ)
+        currROTS.setStatusDate(new Date());
+        currROTS.setStatus(REQUEST_STATUS.APPROVED);
+        topicRequestStatusRepos.save(currROTS);
+        updateTeamTopic(currROTS.getTopicRequest().getRequestingTeam(), currROTS.getTopicRequest().getTopic());
+    }
+    public void declineROT(long rotId){
+        var currROTS = getAllTopicRequestsStatuses().stream().filter(trs->trs.getTopicRequest().getId()==rotId).findFirst().get();//ищем статус по этому запросу (ДОЛЖЕН БЫТЬ ВСЕГО ОДИН ТАКОЙ)
+        currROTS.setStatusDate(new Date());
+        currROTS.setStatus(REQUEST_STATUS.REJECTED);
+        topicRequestStatusRepos.save(currROTS);
+    }
+    public void deleteROTAndROTSByROTSId(long rotsId){
+        var currROT = topicRequestStatusRepos.findById(rotsId).get().getTopicRequest();
+        topicRequestStatusRepos.deleteById(rotsId);
+        topicRequestRepos.deleteById(currROT.getId());
+    }
+    public void deleteAllTeamROTAndRotsByTeamId(long teamId){
+        for (TopicRequestStatus rots:
+             getAllTopicRequestsStatuses()) {
+            if(rots.getTopicRequest().getRequestingTeam().getId()==teamId){
+                deleteROTAndROTSByROTSId(rots.getId());
+            }
+        }
+    }
+    public void cascadeDeleteROTAndROTS(long teamId){
+        var currTeamROTList = getAllTopicRequests().stream().filter(tr->tr.getRequestingTeam().getId()==teamId).toList();
+        var currTeamROTSList = getAllTopicRequestsStatuses().stream().filter(trs->trs.getTopicRequest().getRequestingTeam().getId()==teamId).toList();
+        for (TopicRequestStatus trs:
+             currTeamROTSList) {
+
+        }
+    }
+
+    public void updateTeamTopic(Team team, Topic topic){
+        if(team.getTopic()==null){
+            team.setTopic(topic);
+            teamRepos.save(team);
+        }
+    }
+    public TopicRequest getTopicRequestByTeamIdAndTopicId(long teamId, long topicId){
+        return getAllTopicRequests().stream().filter(topicRequest -> topicRequest.getRequestingTeam().getId()==teamId
+                && topicRequest.getTopic().getId()==topicId).findFirst().get();
+    }
+    public void createTopicRequest(long teamId, long topicId){
+        var requestedTeam =  teamRepos.findById(teamId).get();
+        var requestTopic = getTopicById(topicId);
+        var newTopicRequest = new TopicRequest();
+        newTopicRequest.setTopic(requestTopic);
+        newTopicRequest.setRequestingTeam(requestedTeam);
+        topicRequestRepos.save(newTopicRequest);
+
+        //нужно создать заявку для модера
+        var newCTRS = new TopicRequestStatus();
+        newCTRS.setStatus(REQUEST_STATUS.CREATED);
+        newCTRS.setStatusDate(new Date());
+        newCTRS.setTopicRequest(getTopicRequestByTeamIdAndTopicId(teamId, topicId));
+        topicRequestStatusRepos.save(newCTRS);
+    }
+    public boolean isTopicBooked(long topicId){
+        var allTeams = (List<Team>) teamRepos.findAll();
+        for (Team team:
+             allTeams) {
+            if(team.getTopic()!=null && team.getTopic().getId()==topicId){ //прохожусь по всем командам, если занятая командой тема -
+                                                                           // - это та, которую мы хотим проверить, то true
+                return true;
+            }
+        }
+        return false;
+    }
     public int countTCRSByRequestStatus(REQUEST_STATUS status) {
         int ctr=0;
         for (TopicCreateRequestStatus tcrs:

@@ -97,7 +97,7 @@ public class AdmController{
         m.addAttribute("allRequestStatuses", REQUEST_STATUS.values());
         m.addAttribute("countOfActiveTCR", topicService.getCountOfActiveCreateRequests());
         m.addAttribute("countOfAllTypesTCRS", topicService.countEveryTypeOfTCRequests());
-        m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());//todo сделать их  (m.addAttribute("requestsOnTopics", topicService.topicRequestsGetAll());)
+        m.addAttribute("requestsOnTopics", topicService.getAllTopicRequestsStatuses());
         return "adm/requests";
     }
     boolean checkPrincipalPrivileges(Principal p){
@@ -167,6 +167,21 @@ public class AdmController{
         return "error";
         }
     }
-
+    @PostMapping("/approveROT")
+    public String approveROT(Principal principal,/* long rotsId,*/ long rotId ){
+        if(userService.getByLogin(principal.getName()).getRole().name().equals("MAIN_ADMIN")
+        || userService.getByLogin(principal.getName()).getRole().name().equals("ADMIN")){ // если авторизованный пользователь - админ или мейн админ
+            topicService.approveROT(rotId);
+        }
+        return "redirect:/adm/requests";
+    }
+    @PostMapping("/declineROT")
+    public String declineROT(Principal principal,/* long rotsId,*/ long rotId ){
+        if(userService.getByLogin(principal.getName()).getRole().name().equals("MAIN_ADMIN")
+                || userService.getByLogin(principal.getName()).getRole().name().equals("ADMIN")){ // если авторизованный пользователь - админ или мейн админ
+            topicService.declineROT(rotId);
+        }
+        return "redirect:/adm/requests";
+    }
 
 }

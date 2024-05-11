@@ -175,5 +175,17 @@ public class UserController {
         return "redirect:/team/"+teamId;
     }
 
+    @PostMapping("/topic/createRequest")
+    public String createRequestToTopicByTeam(Principal principal, String requestedUserLogin, long selectedTeamId, long requestedTopicId){
+        if(Objects.equals(userService.getByLogin(requestedUserLogin).getId(), userService.getByLogin(principal.getName()).getId())){ //если подавший заявку - это я
+            if(teamService.amIMainInThisTeam(userService.getByLogin(requestedUserLogin).getId(), selectedTeamId)){ // если я имею главную роль в этой команде
+                if(!topicService.isTopicBooked(requestedTopicId)){ // если тема не занята
+                    topicService.createTopicRequest(selectedTeamId, requestedTopicId); //создаем заявку на тему
+                }
+            }
+        }
+        return "redirect:/topic/"+requestedTopicId; //переходим на страницу темы
+    }
+
 
 }

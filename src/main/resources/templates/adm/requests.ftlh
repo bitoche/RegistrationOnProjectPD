@@ -53,6 +53,19 @@
         .request-item{
             display: flex;
         }
+        .rot-table {
+            border-collapse: collapse; /* Используем collapse, чтобы убрать отступы между ячейками */
+        }
+
+        .rot-table td, th {
+            padding: 10px; /* Отступ внутри ячеек */
+            text-align: center; /* Выравнивание данных по центру */
+            border: 1px solid black; /* Границы для ячеек */
+        }
+
+        .rot-table th,td:nth-child(even) {
+            background-color: #f2f2f2; /* Делаем каждый четный столбец серым */
+        }
     </style>
     <link type="text/css" rel="stylesheet" href="/css/main-navbar.css"/>
 </head>
@@ -203,7 +216,6 @@
                                             <button type="submit">Отправить</button>
                                         </form>
                                     </div>
-                                <#--todo добавить кнопку отмены с комментарием, и автоматическое изменение статуса заявки-->
                                 </#if>
                             </td>
                         </tr>
@@ -225,11 +237,47 @@
         <div class="requests-container">
             <#if requestsOnTopics??>
                 <#if requestsOnTopics?has_content>
-                    <#list requestsOnTopics as rot>
-                        <div class="request-item">
-                            <#if rot_has_next><hr></#if>
-                        </div>
-                    </#list>
+                    <table class="rot-table">
+                        <thead>
+                        <tr>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th>Команда</th>
+                            <th>Тема</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <#list requestsOnTopics as rot>
+                            <tr>
+                                <td>${rot.getStatus().name()}</td>
+                                <td>${rot.getStatusDate()}</td>
+                                <td>
+                                    <a href="/team/${rot.getTopicRequest().getRequestingTeam().getId()}">
+                                        ${rot.getTopicRequest().requestingTeam.getName()}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="/topic/${rot.getTopicRequest().getTopic().getId()}">
+                                        ${rot.getTopicRequest().getTopic().getName()}
+                                    </a>
+                                </td>
+                                <td>
+                                    <form action="/adm/approveROT" method="post">
+                                        <input hidden name="rotsId" value="${rot.getId()}">
+                                        <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
+                                        <button type="submit">Разрешить</button>
+                                    </form>
+                                    <form action="/adm/declineROT" method="post">
+                                        <input hidden name="rotsId" value="${rot.getId()}">
+                                        <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
+                                        <button type="submit">Отказать</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </#list>
+                        </tbody>
+                    </table>
                 <#else>
                     Здесь пока ничего нет.
                 </#if>

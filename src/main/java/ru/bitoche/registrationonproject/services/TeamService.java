@@ -192,7 +192,9 @@ public class TeamService {
         var teamToDelete = getTeamById(teamId);
         //каскадное удаление teamMember'ов
         teamMemberRepos.deleteAll(teamToDelete.getMembers());
-        //
+        //удаляем заявки на тему и взятые темы
+        topicService.deleteAllTeamROTAndRotsByTeamId(teamId);
+        //удаляем команду
         teamRepos.deleteById(teamId);
 
     }
@@ -210,7 +212,7 @@ public class TeamService {
         AllUserRequestsDTO out = new AllUserRequestsDTO();
         out.setTcrTcrsDTOList(topicService.getUserTCR_S(userId));
         out.setTeamTeamRequestDTOList(getAllTeamTeamRequests(userId));
-        out.setTopicRequestStatusList(null); //todo сделать заявки на взятие темы командой
+        out.setTopicRequestStatusList(null); //сделать заявки на взятие темы командой (отмена, они в команде у главных пользователей)
         return out;
     }
 
