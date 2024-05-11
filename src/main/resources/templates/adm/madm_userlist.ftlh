@@ -40,7 +40,7 @@
 </head>
 <body>
 <#include "*/schemes/navbar.ftl">
-<h1 style="color: red"><#if err??>${err}</#if></h1>
+<h2 style="color: red"><#if err??>${err}</#if></h2>
 <table id="table">
     <thead>
     <tr>

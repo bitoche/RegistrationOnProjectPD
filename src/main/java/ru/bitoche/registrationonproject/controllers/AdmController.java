@@ -1,6 +1,7 @@
 package ru.bitoche.registrationonproject.controllers;
 
 import lombok.AllArgsConstructor;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,7 @@ public class AdmController{
     IAppUserService userService;
     ITopicService topicService;
     @GetMapping("/userList")
-    public String mainAdminMainPage(Principal principal, Model model){
+    public String mainAdminMainPage(Principal principal, Model model, @Nullable String errMess){
         if(principal!=null){
             model.addAttribute("user", userService.getByLogin(principal.getName()));
         }
@@ -35,27 +36,55 @@ public class AdmController{
         model.addAttribute("userStudyGroups", userService.getAllStudyGroups());
         model.addAttribute("userCourses", userService.getAllStudyCourses());
         model.addAttribute("userRoles", USER_ROLE.values());
+        model.addAttribute("err", errMess);
+
         return "adm/madm_userlist";
     }
     @PostMapping("/changerole")
     public String changeRole(Principal principal, String userId, String role, Model model){
-        if(userService.getByLogin(principal.getName()).getRole()==USER_ROLE.MAIN_ADMIN){
-            if(!userService.changeRole(Long.parseLong(userId), role)){
-                model.addAttribute("err", "ОШИБКА СМЕНЫ РОЛИ!!! пользователя (id=" +
-                        userId +"; role="+userService.getById(Integer.parseInt(userId))+") на "+ role);
+        if(principal!=null){
+            model.addAttribute("user", userService.getByLogin(principal.getName()));
+        }
+        model.addAttribute("userList", userService.getAll());
+        model.addAttribute("userStudyGroups", userService.getAllStudyGroups());
+        model.addAttribute("userCourses", userService.getAllStudyCourses());
+        model.addAttribute("userRoles", USER_ROLE.values());
+        var errMess = "";
+        if(userService.getByLogin(principal.getName()).getRole()==USER_ROLE.MAIN_ADMIN){ //если моя роль MAINADMIN то просто делай
+            if(Long.parseLong(userId)!=userService.getByLogin(principal.getName()).getId()){ // если я меняю сам себе то нельзя
+                if(!userService.changeRole(Long.parseLong(userId), role)){
+                    errMess = "ОШИБКА СМЕНЫ РОЛИ!!! пользователя (id=" +
+                            userId +"; role="+userService.getById(Integer.parseInt(userId)).getRole().name()+") на "+ role;
+                }
+            }
+            else{
+                errMess = "Вы не можете сменить роль самому себе (id=" +
+                        userId +"; role="+userService.getById(Integer.parseInt(userId)).getRole().name()+") на "+ role;
             }
         }
-        else if(Objects.equals(role, USER_ROLE.MAIN_ADMIN.name())){
-            model.addAttribute("err", "Попросите пользователя с ролью MAIN_ADMIN сменить роль пользователя (id=" +
-                    userId +"; role="+userService.getById(Integer.parseInt(userId))+") на MAIN_ADMIN");
+        else if(Objects.equals(role, USER_ROLE.MAIN_ADMIN.name())
+                /*если меняю на MAINADMIN*/
+                || userService.getById(Long.parseLong(userId)).getRole()==USER_ROLE.MAIN_ADMIN
+            /*или если роль того кому меняю MAINADMIN*/
+        ){
+            errMess = "Попросите пользователя с ролью MAIN_ADMIN сменить роль пользователя (id=" +
+                    userId +"; role="+userService.getById(Integer.parseInt(userId)).getRole().name()+") на "+role;
         }
-        else {
+        else if(userService.getByLogin(principal.getName()).getRole()==USER_ROLE.ADMIN
+        /*если моя роль ADMIN*/
+        && userService.getById(Long.parseLong(userId)).getRole()==USER_ROLE.ADMIN
+        /*и я меняю роль пользователю, у которого роль ADMIN*/){
+            errMess = "Попросите пользователя с ролью MAIN_ADMIN сменить роль пользователя (id=" +
+                    userId +"; role="+userService.getById(Integer.parseInt(userId)).getRole().name()+") на "+role;
+        }
+        else { //если не сменил то ошибку
             if(!userService.changeRole(Long.parseLong(userId), role)){
-                model.addAttribute("err", "ОШИБКА СМЕНЫ РОЛИ!!! пользователя (id=" +
-                        userId +"; role="+userService.getById(Integer.parseInt(userId))+") на "+ role);
+                errMess = "ОШИБКА СМЕНЫ РОЛИ!!! пользователя (id=" +
+                        userId +"; role="+userService.getById(Integer.parseInt(userId)).getRole().name()+") на "+ role;
             }
         }
-        return "redirect:/adm/userList";
+        model.addAttribute("err", errMess);
+        return "adm/madm_userlist";
 
     }
 

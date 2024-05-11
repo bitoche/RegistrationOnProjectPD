@@ -11,8 +11,28 @@
 <body>
 <#include "schemes/navbar.ftl">
 <h1 style="text-align: center">Тема "${currTopic.getName()}"</h1>
-<#if bookedTeam??>
+<#if bookedTeam?? && bookedTeam?has_content>
     <h2 style="color: red; text-align: center">ЗАБРОНИРОВАНО КОМАНДОЙ "<a href="/team/${bookedTeam.getId()}">${bookedTeam.getName()}</a>"</h2>
+    <#else>
+        <h2 style="color: green">Вы можете забронировать эту тему!</h2>
+        <form method="post" action="/topic/createRequest">
+            <input hidden name="requestedUserId" value="${user.getLogin()}">
+            <label>
+                Выбрите одну из ваших команд<br/>
+                <select required name="selectedTeam">
+                    <option selected value=''>Не выбрано</option>
+                    <#if myTeams?? && myTeams?has_content>
+                        <#list myTeams as mt>
+                            <#if mt.getTopic?? && mt.getTopic()?has_content>
+                                <#else >
+                                    <option value="${mt.getId()}">${mt.getName()}</option>
+                            </#if>
+                        </#list>
+                    </#if>
+                </select>
+            </label>
+            <button type="submit">Подать заявку выбранной командой</button>
+        </form>
 </#if>
 <h3>Название</h3>
 <p>${currTopic.getName()}</p>

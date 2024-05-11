@@ -7,6 +7,8 @@ import lombok.Setter;
 import ru.bitoche.registrationonproject.models.TopicCreateRequest;
 import ru.bitoche.registrationonproject.models.TopicCreateRequestStatus;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -14,4 +16,6 @@ import ru.bitoche.registrationonproject.models.TopicCreateRequestStatus;
 public class TCR_TCRSDTO {
     TopicCreateRequest topicCreateRequest;
     TopicCreateRequestStatus topicCreateRequestStatus;
+    Date tcrDate;
+    Date tcrsDate;
 }

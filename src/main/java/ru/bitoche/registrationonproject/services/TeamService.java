@@ -50,6 +50,19 @@ public class TeamService {
         }
         return userTeams;
     }
+
+    public List<Team> getMainUserTeamsByLogin(String username){
+        var userId = userService.getByLogin(username).getId();
+        var allUserTeams = getUserTeams(userId);
+        List<Team> out = new ArrayList<>();
+        for (Team uteam:
+             allUserTeams) {
+            if(uteam.amIMain(userId)){
+                out.add(uteam);
+            }
+        }
+        return out;
+    }
     public void saveTeamMember(TeamMember tm){
         teamMemberRepos.save(tm);
     }

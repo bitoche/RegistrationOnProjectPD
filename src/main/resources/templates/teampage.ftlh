@@ -48,6 +48,19 @@
             <p style="color: red" onload="alert('Не удалось получить список заявок')">Не удалось получить список заявок</p>
         </#if>
     </div>
+    <button id="topicRequestsButton" onclick="showTopicRequests()">Заявки на тему</button>
+    <div id="topicRequestsContainer" class="teamrequestdiv hidden">
+        <a onclick="showTopicRequests()" class="exit-btn">Закрыть</a>
+        <#if requestsToTeam?? >
+            <#if requestsToTeam?has_content>
+            <#else>
+                Нет поданных заявок.
+            </#if>
+        <#else>
+            <p style="color: red" onload="alert('Не удалось получить список заявок')">Не удалось получить список заявок</p>
+        </#if>
+    </div>
+
 </#if>
 <h1 style="text-align: center">Команда "${currTeam.getName()}"</h1>
 <div class="team-data">

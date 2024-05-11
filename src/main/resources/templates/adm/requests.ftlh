@@ -108,13 +108,19 @@
                 </#if>
             </select>
         </label>
-
+        <label>
+            По дате
+            <select id="byDateCheckbox" onchange="sortByDate()">
+                <option value=''>Не выбрано</option>
+                <option value="fromNewToOld">От новых к старым</option>
+                <option value="fromOldToNew">От старых к новым</option>
+            </select>
+        </label>
         <div class="requests-container">
             <table id="status-data">
                 <tbody>
             <#if tcrequests??>
                 <#if tcrequests?has_content>
-
                     <#list tcrequests as tcrtcrs>
                         <tr>
                             <td>
@@ -137,9 +143,14 @@
                             <td>
                                 <div <#if tcrtcrs_has_next>style="border-bottom-style: solid; border-width: 1px"</#if>>
                                     <div class="request-item">
-                                        <div class="item-date">
+                                        <div class="item-date" style="font-size: 0">
                                             <label>
-                                                Дата запроса:
+                                                ${tcrtcrs.getTopicCreateRequest().getRequestDate()?string("yyyy-MM-dd'T'HH:mm:ss")}
+                                            </label>
+                                        </div>
+                                        <div class="item-friendly-date">
+                                            Дата запроса:
+                                            <label>
                                                 ${tcrtcrs.getTopicCreateRequest().getRequestDate()?date}
                                             </label>
                                         </div>
@@ -229,6 +240,120 @@
         <#--остальное-->
     </div>
     <script>
+        //сортировка таблицы по дате и статусу
+        document.addEventListener("DOMContentLoaded", function() {
+            var statusSelect = document.getElementById("statusSelect");
+            var dateSelect = document.getElementById("byDateCheckbox");
+
+            statusSelect.addEventListener("change", updateTable);
+            dateSelect.addEventListener("change", updateTable);
+
+            updateTable(); // Вызываем функцию для обновления таблицы сразу после загрузки страницы
+        });
+
+        //функция сортировки по дате
+        function sortByDate() {
+            var selectElement = document.getElementById("byDateCheckbox");
+            var selectedValue = selectElement.value;
+            console.log('Вызван метод сортировки по дате, выбрано ' + selectElement.value)
+            var rows = document.querySelectorAll("#status-data tbody tr");
+            var sortedRows = Array.from(rows);
+
+            if (selectedValue === "fromNewToOld") {
+                sortedRows.sort(function(rowA, rowB) {
+                    var dateA = new Date(rowA.querySelector(".item-date label").innerText);
+                    var dateB = new Date(rowB.querySelector(".item-date label").innerText);
+                    return dateA - dateB;
+                });
+            } else if (selectedValue === "fromOldToNew") {
+                sortedRows.sort(function(rowA, rowB) {
+                    var dateA = new Date(rowA.querySelector(".item-date label").innerText);
+                    var dateB = new Date(rowB.querySelector(".item-date label").innerText);
+                    return dateB - dateA;
+                });
+            }
+
+            var tbody = document.querySelector("#status-data tbody");
+            sortedRows.forEach(function(row) {
+                tbody.appendChild(row);
+            });
+        }
+        function updateTable() {
+            var statusSelect = document.getElementById("statusSelect");
+            var dateSelect = document.getElementById("byDateCheckbox");
+
+            var selectedStatus = statusSelect.value;
+            var selectedDateSort = dateSelect.value;
+
+            var rows = document.querySelectorAll("#status-data tbody tr");
+            var sortedRows = Array.from(rows);
+
+            sortedRows.forEach(function(row) {
+                var statusCell = row.querySelector("td:first-child");
+                var statusText = statusCell.innerText.trim();
+                var statusValue = getStatusValue(statusText);
+
+                if ((!selectedStatus || statusValue === selectedStatus) &&
+                    (!selectedDateSort || selectedDateSort === 'fromOldToNew' || selectedDateSort === 'fromNewToOld')) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            if (selectedStatus && selectedDateSort) {
+                sortedRows.sort(function(rowA, rowB) {
+                    var dateA = new Date(rowA.querySelector(".item-date label").innerText);
+                    var dateB = new Date(rowB.querySelector(".item-date label").innerText);
+
+                    if (selectedDateSort === "fromNewToOld") {
+                        return dateA - dateB;
+                    } else if (selectedDateSort === "fromOldToNew") {
+                        return dateB - dateA;
+                    }
+                });
+
+                var tbody = document.querySelector("#status-data tbody");
+                tbody.innerHTML = ""; // Очищаем таблицу перед добавлением отсортированных строк
+
+                sortedRows.forEach(function(row) {
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var statusSelect = document.getElementById("statusSelect");
+            var dateSelect = document.getElementById("byDateCheckbox");
+
+            statusSelect.addEventListener("change", updateTable); // Добавляем обработчик изменения статуса
+            dateSelect.addEventListener("change", updateTable);
+
+            updateTable(); // Вызываем функцию для обновления таблицы сразу после загрузки страницы
+        });
+
+
+
+        function getStatusValue(statusText) {
+            switch(statusText) {
+                case "Создано":
+                    return "CREATED";
+                case "Просмотрено":
+                    return "REVIEWED";
+                case "Отказано":
+                    return "REJECTED";
+                case "Утверждено":
+                    return "APPROVED";
+                case "Повторно отправлено":
+                    return "RESUBMITTED";
+                default:
+                    return "";
+            }
+        }
+
+
+
+        //показ меню
         function showTCRMenu() {
             var topicCreationRequestsMenu = document.getElementById(`tcrequest_menu`);
             var TCRbutton = document.getElementById(`TCRbutton`);
@@ -253,55 +378,7 @@
             declineMenu.classList.toggle('hidden');
             declineBtn.classList.toggle('disabled');
         }
-        document.addEventListener("DOMContentLoaded", function() {
-            var statusSelect = document.getElementById("statusSelect");
-            var createdOption = statusSelect.querySelector("option[value='CREATED']");
-            createdOption.selected = true; // Устанавливаем атрибут selected для элемента <option> с value="CREATED"
 
-            statusSelect.addEventListener("change", function() {
-                var selectedStatus = statusSelect.value; // Получаем выбранное значение из <select>
-                filterTableByStatus(selectedStatus); // Вызываем функцию для фильтрации таблицы
-            });
-
-            // Вызываем функцию для фильтрации таблицы сразу после загрузки страницы
-            filterTableByStatus("CREATED");
-        });
-
-        function filterTableByStatus(selectedStatus) {
-            var rows = document.querySelectorAll("#status-data tbody tr"); // Получаем все строки таблицы
-            rows.forEach(function(row) {
-                var statusCell = row.querySelector("td:first-child"); // Получаем ячейку со статусом (первая ячейка в строке)
-                var statusText = statusCell.innerText.trim(); // Получаем текст статуса из ячейки
-
-                // Получаем соответствующее значение статуса для отображаемого текста
-                var statusValue = getStatusValue(statusText);
-
-                // Если выбрано значение "Не выбрано" или выбранное значение соответствует значению статуса в текущей строке, то строка отображается, иначе скрывается
-                if (!selectedStatus || statusValue === selectedStatus) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        // Функция для получения значения статуса по отображаемому тексту
-        function getStatusValue(statusText) {
-            switch(statusText) {
-                case "Создано":
-                    return "CREATED";
-                case "Просмотрено":
-                    return "REVIEWED";
-                case "Отказано":
-                    return "REJECTED";
-                case "Утверждено":
-                    return "APPROVED";
-                case "Повторно отправлено":
-                    return "RESUBMITTED"
-                default:
-                    return "";
-            }
-        }
     </script>
 </body>
 </html>

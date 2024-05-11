@@ -51,4 +51,13 @@ public class Team {
     public void addTeamMember(TeamMember teamMember){
         members.add(teamMember);
     }
+    public boolean amIMain(long id){
+        for (TeamMember m:
+             getMainMembers()) {
+            if(m.getMember().getId()==id){
+                return true;
+            }
+        }
+        return false;
+    }
 }

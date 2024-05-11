@@ -16,4 +16,11 @@
             document.location.href="/team/cancelRequest/"+requestId;
         }
     }
+
+    function showTopicRequests(){
+        var topicRequestsContainer = document.getElementById('topicRequestsContainer');
+        var topicRequestsButton = document.getElementById('topicRequestsButton');
+        topicRequestsContainer.classList.toggle('hidden');
+        topicRequestsButton.classList.toggle('disabled');
+    }
 </script>

@@ -118,7 +118,9 @@ public class TopicService implements ITopicService{
              tcrGetAll()) {
             TCR_TCRSDTO tcr_tcrs = new TCR_TCRSDTO();
             tcr_tcrs.setTopicCreateRequest(tcr);
+            tcr_tcrs.setTcrDate(tcr.getRequestDate());
             tcr_tcrs.setTopicCreateRequestStatus(getTCRSByTCRId(tcr.getId()));
+            tcr_tcrs.setTcrsDate(getTCRSByTCRId(tcr.getId()).getDate());
             out.add(tcr_tcrs);
         }
         return out;

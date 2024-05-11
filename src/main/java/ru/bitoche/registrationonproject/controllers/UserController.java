@@ -128,7 +128,9 @@ public class UserController {
     }
     @GetMapping("/topic/{topicId}")
     public String openTopicPage(Model m, @PathVariable long topicId, Principal principal){
+        //здесь уже есть principal, иначе не пустит на страницу
         m.addAttribute("user", userService.getByLogin(principal.getName()));
+        m.addAttribute("myTeams", teamService.getMainUserTeamsByLogin(principal.getName()));
         m.addAttribute("currTopic", topicService.getTopicById(topicId));
         m.addAttribute("bookedTeam", teamService.getBookedTeam(topicId));
         return "topicpage";
@@ -172,5 +174,6 @@ public class UserController {
         }
         return "redirect:/team/"+teamId;
     }
+
 
 }
