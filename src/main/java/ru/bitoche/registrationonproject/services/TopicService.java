@@ -289,8 +289,40 @@ public class TopicService implements ITopicService{
         saveTCRS(currTCRS);
     }
 
+    public Team getTeamByTopicId(long topicId){
+        for (Team team:
+                teamRepos.findAll()) {
+            if(team.getTopic()!=null&&team.getTopic().getId()==topicId){
+                return team;
+            }
+        }
+        return null;
+    }
+    public TopicRequestStatus getROTSByTopicId(long topicId){
+        var data = getAllTopicRequestsStatuses().stream().filter(rots->rots.getTopicRequest().getTopic().getId()==topicId).findFirst();
+        return data.orElse(null); // если нет ни одной заявки то возвращаем null
+    }
     public void deleteTopic(Long topicId){
+        //достаем все записи об этой теме
+
+        var topicTCR = getTopicById(topicId).getAddingRequest();
+        assert topicTCR != null;
+        var topicTCRS = getTCRSByTCRId(topicTCR.getId());
+        tcrsRepos.deleteById(topicTCRS.getId());
+
+        var topicROTS = getROTSByTopicId(topicId);
+        if(topicROTS!=null){
+            topicRequestStatusRepos.deleteById(topicROTS.getId());
+            topicRequestRepos.deleteById(topicROTS.getTopicRequest().getId());
+        }
+        var currTeam = getTeamByTopicId(topicId);
+        if(currTeam!=null){
+            currTeam.setTopic(null);
+            teamRepos.save(currTeam);
+        }
         topicRepos.delete(getTopicById(topicId));
+        tcrRepos.deleteById(topicTCR.getId());
+
     }
     public int getCountOfActiveCreateRequests(){
         return getAllTCRWithStatuses().stream().filter(t->t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.CREATED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.REVIEWED||t.getTopicCreateRequestStatus().getStatus()==REQUEST_STATUS.RESUBMITTED).toList().size();
