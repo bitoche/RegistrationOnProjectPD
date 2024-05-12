@@ -253,45 +253,48 @@
         </form>
     </div>
 </#if>
-<script>
-    function showRTTF() {
-        var rttfMenu = document.getElementById('rttfMenu');
-        var RTTFButton = document.getElementById('requestToTeamFormButton');
-        rttfMenu.classList.toggle('hidden');
-        RTTFButton.classList.toggle('disabled');
-    }
-    function showHiddenForm(formName){
-        var hiddenMenu = document.getElementById('hiddenMenu+'+formName);
-        var openingButton=document.getElementById('openingBtn+'+formName);
-        hiddenMenu.classList.toggle('hidden');
-        openingButton.classList.toggle('disabled');
-    }
-    function showRTCTF(){
-        var rtctfMenu = document.getElementById('rtctfMenu');
-        var RTCTFButton = document.getElementById('requestToCreateTeamFormButton');
-        rtctfMenu.classList.toggle('hidden');
-        RTCTFButton.classList.toggle('disabled');
-    }
-    function searchRequestToTeamTable() {
-        var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("teamTable"); // Выбор таблицы по id
-        tr = table.getElementsByTagName("tr");
+<#if user.getId()==userData.getId()>
+    <script>
+        function showRTTF() {
+            var rttfMenu = document.getElementById('rttfMenu');
+            var RTTFButton = document.getElementById('requestToTeamFormButton');
+            rttfMenu.classList.toggle('hidden');
+            RTTFButton.classList.toggle('disabled');
+        }
+        function showHiddenForm(formName){
+            var hiddenMenu = document.getElementById('hiddenMenu+'+formName);
+            var openingButton=document.getElementById('openingBtn+'+formName);
+            hiddenMenu.classList.toggle('hidden');
+            openingButton.classList.toggle('disabled');
+        }
+        function showRTCTF(){
+            var rtctfMenu = document.getElementById('rtctfMenu');
+            var RTCTFButton = document.getElementById('requestToCreateTeamFormButton');
+            rtctfMenu.classList.toggle('hidden');
+            RTCTFButton.classList.toggle('disabled');
+        }
+        function searchRequestToTeamTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("teamTable"); // Выбор таблицы по id
+            tr = table.getElementsByTagName("tr");
 
-        // Проход по всем строкам таблицы, скрывая те, которые не соответствуют поисковому запросу
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[0]; // Первая ячейка каждой строки содержит название команды
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
+            // Проход по всем строкам таблицы, скрывая те, которые не соответствуют поисковому запросу
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[0]; // Первая ячейка каждой строки содержит название команды
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
                 }
             }
         }
-    }
-</script>
+    </script>
+</#if>
+
 </body>
 </html>

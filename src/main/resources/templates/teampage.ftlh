@@ -51,11 +51,33 @@
     <button id="topicRequestsButton" onclick="showTopicRequests()">Заявки на тему</button>
     <div id="topicRequestsContainer" class="teamrequestdiv hidden">
         <a onclick="showTopicRequests()" class="exit-btn">Закрыть</a>
-        <#if requestsToTeam?? >
-            <#if requestsToTeam?has_content>
-                <#--todo сделать здесь вывод моих заявок на тему с возможностью отмены-->
+        <#if requestsToTopics?? >
+            <#if requestsToTopics?has_content>
+                 <table class="requeststable" style="border-collapse: collapse">
+                     <thead>
+                     <tr>
+                         <th>Дата запроса</th>
+                         <th>Статус запроса</th>
+                         <th>Тема</th>
+                         <th>Действия</th>
+                     </tr>
+                     </thead>
+                    <tbody>
+                    <#list requestsToTopics?sort_by("statusDate") as rots> <#--rots = requestOnTopicStatus-->
+                        <td>${rots.getStatusDate()?datetime}</td>
+                        <td>${rots.getStatus().name()}</td>
+                        <td><a href="/topic/${rots.getTopicRequest().getTopic().getId()}">${rots.getTopicRequest().getTopic().name}</a></td>
+                        <td>
+                            <#if rots.getStatus().name()!="APPROVED">
+                                <a style="text-decoration: none;" onclick="cancelROT(${rots.id})" href="#cancel">Отменить</a>
+                            </#if>
+                        </td>
+                        </tr>
+                    </#list>
+                    </tbody>
+                 </table>
             <#else>
-                Нет поданных заявок.
+                Нет заявок.
             </#if>
         <#else>
             <p style="color: red" onload="alert('Не удалось получить список заявок')">Не удалось получить список заявок</p>
@@ -112,6 +134,11 @@
 <#if currTeam.getTopic()??>
     <h3>Тема проекта</h3>
     <a href="/topic/${currTeam.getTopic().getId()}"><strong>${currTeam.getTopic().getName()}</strong></a>
+    <#if amIMain>
+        <a href="#cancel" onclick="confirmCancelTopic()">
+            Отменить тему
+        </a>
+    </#if>
 </#if>
 <#if amIMain>
     <form id="deleteTeamForm" method="POST" action="/team/delete">
@@ -121,32 +148,40 @@
     </form>
 
 </#if>
-<script>
-    function changeRole(event, memberName){
-        event.preventDefault();
-        var form = event.target.form;
-        var result = confirm("Вы уверены, что хотите сменить роль "+memberName+"?");
-
-        if(result){
-            form.submit();
-        } else {
-            return false;
+<#if amIMain>
+    <script>
+        function confirmCancelTopic(){
+            if(confirm('Вы действительно хотите отказаться от темы ${currTeam.getTopic().getName()}?')){
+                document.location.href='/team/${currTeam.getId()}/cancelTopic';
+            }
         }
-    }
-    function confirmDeleteSubmit(event) {
-        event.preventDefault(); // Отменить стандартное действие кнопки (отправку формы)
+        function changeRole(event, memberName){
+            event.preventDefault();
+            var form = event.target.form;
+            var result = confirm("Вы уверены, что хотите сменить роль "+memberName+"?");
 
-        // Вызываем окно подтверждения
-        var result = confirm("Вы уверены, что хотите распустить команду ${currTeam.getName()}?");
-
-        if (result) {
-            // Если пользователь подтвердил, отправляем форму
-            document.getElementById("deleteTeamForm").submit();
-        } else {
-            // Если пользователь отменил, ничего не делаем
-            return false;
+            if(result){
+                form.submit();
+            } else {
+                return false;
+            }
         }
-    }
-</script>
+        function confirmDeleteSubmit(event) {
+            event.preventDefault(); // Отменить стандартное действие кнопки (отправку формы)
+
+            // Вызываем окно подтверждения
+            var result = confirm("Вы уверены, что хотите распустить команду ${currTeam.getName()}?");
+
+            if (result) {
+                // Если пользователь подтвердил, отправляем форму
+                document.getElementById("deleteTeamForm").submit();
+            } else {
+                // Если пользователь отменил, ничего не делаем
+                return false;
+            }
+        }
+    </script>
+</#if>
+
 </body>
 </html>

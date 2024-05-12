@@ -80,6 +80,23 @@ public class TopicService implements ITopicService{
         currROTS.setStatusDate(new Date());
         currROTS.setStatus(REQUEST_STATUS.REJECTED);
         topicRequestStatusRepos.save(currROTS);
+        updateTeamTopic(currROTS.getTopicRequest().getRequestingTeam(), null);
+    }
+    public List<TopicRequestStatus> getAllROTSByTeamId(long teamId){
+        List<TopicRequestStatus> out = new ArrayList<>();
+        for (TopicRequestStatus trs:
+             getAllTopicRequestsStatuses()) {
+            if(trs.getTopicRequest().getRequestingTeam().getId()==teamId){
+                out.add(trs);
+            }
+        }
+        return out;
+    }
+    public TopicRequest getROTByROTSId(long rotsId){
+        return getROTSById(rotsId).getTopicRequest();
+    }
+    public TopicRequestStatus getROTSById(long rotsId){
+        return getAllTopicRequestsStatuses().stream().filter(rots->rots.getId()==rotsId).findFirst().get();
     }
     public void deleteROTAndROTSByROTSId(long rotsId){
         var currROT = topicRequestStatusRepos.findById(rotsId).get().getTopicRequest();
@@ -104,16 +121,45 @@ public class TopicService implements ITopicService{
     }
 
     public void updateTeamTopic(Team team, Topic topic){
-        if(team.getTopic()==null){
-            team.setTopic(topic);
-            teamRepos.save(team);
-        }
+        team.setTopic(topic);
+        teamRepos.save(team);
     }
     public TopicRequest getTopicRequestByTeamIdAndTopicId(long teamId, long topicId){
         return getAllTopicRequests().stream().filter(topicRequest -> topicRequest.getRequestingTeam().getId()==teamId
                 && topicRequest.getTopic().getId()==topicId).findFirst().get();
     }
+    public TopicRequestStatus getROTSByROTId(long rotId){//rots = requestOnTopicStatus; rot = requestOnTopic
+        for (TopicRequestStatus rots:
+             getAllTopicRequestsStatuses()) {
+            if(rots.getTopicRequest().getId()==rotId){
+                return rots;
+            }
+        }
+        return null;
+    }
+    public boolean isTeamRequestedToThisTopic(long teamId, long topicId){
+        for (TopicRequestStatus trs:
+             getAllROTSByTeamId(teamId)) {
+            if(trs.getTopicRequest().getTopic().getId()==topicId){
+                return true;
+            }
+        }
+        return false;
+    }
+    public void deleteROTAndROTSByTeamIdAndTopicId(long teamId, long topicId){
+        for (TopicRequestStatus trs:
+             getAllROTSByTeamId(teamId)) {
+            if(trs.getTopicRequest().getTopic().getId()==topicId){
+                topicRequestStatusRepos.deleteById(trs.getId());
+                topicRequestRepos.deleteById(trs.getTopicRequest().getId());
+                break;
+            }
+        }
+    }
     public void createTopicRequest(long teamId, long topicId){
+        if(isTeamRequestedToThisTopic(teamId, topicId)){
+            deleteROTAndROTSByTeamIdAndTopicId(teamId, topicId);
+        }
         var requestedTeam =  teamRepos.findById(teamId).get();
         var requestTopic = getTopicById(topicId);
         var newTopicRequest = new TopicRequest();
@@ -127,6 +173,8 @@ public class TopicService implements ITopicService{
         newCTRS.setStatusDate(new Date());
         newCTRS.setTopicRequest(getTopicRequestByTeamIdAndTopicId(teamId, topicId));
         topicRequestStatusRepos.save(newCTRS);
+
+
     }
     public boolean isTopicBooked(long topicId){
         var allTeams = (List<Team>) teamRepos.findAll();
@@ -252,4 +300,55 @@ public class TopicService implements ITopicService{
         return getAllTCRWithStatuses().stream().filter(tcr_tcrsdto -> tcr_tcrsdto.getTopicCreateRequest().getRequestingUser().getId()==userId).toList();
     }
 
+    public void saveROTS(TopicRequestStatus rot){
+        topicRequestStatusRepos.save(rot);
+    }
+
+    public void revokeROT(long rotId){
+        var currROTS = getROTSByROTId(rotId);
+        currROTS.setStatus(REQUEST_STATUS.REJECTED);
+        currROTS.setStatusDate(new Date());
+        saveROTS(currROTS);
+        assert currROTS.getTopicRequest().getRequestingTeam().getTopic() != null;
+        if(Objects.equals(currROTS.getTopicRequest().getRequestingTeam().getTopic().getId(), currROTS.getTopicRequest().getTopic().getId())){
+            updateTeamTopic(currROTS.getTopicRequest().getRequestingTeam(), null);
+        }
+    }
+    public long countActiveROTS(){
+        long ctr = 0;
+        for (TopicRequestStatus trs:
+                getAllTopicRequestsStatuses()) {
+            if(trs.getStatus()==REQUEST_STATUS.CREATED
+                    ||trs.getStatus()==REQUEST_STATUS.RESUBMITTED
+                    ||trs.getStatus()==REQUEST_STATUS.REVIEWED){
+                ctr++;
+            }
+        }
+        return ctr;
+    }
+
+
+
+
+    public void createTopicAdm(String title, String description, AppUser admin){
+        var nTCR = new TopicCreateRequest();
+        nTCR.setTopicName(title);
+        nTCR.setTopicDescription(description);
+        nTCR.setRequestDate(new Date());
+        nTCR.setRequestingUser(admin);
+        tcrRepos.save(nTCR);
+
+        createStatusForCreateTopic(nTCR);
+        var nTCRS = getTCRSByTCRId(nTCR.getId());
+        nTCRS.setStatus(REQUEST_STATUS.APPROVED);
+        tcrsRepos.save(nTCRS);
+
+        var nTopic = new Topic();
+        nTopic.setAddingDate(new Date());
+        nTopic.setAddingRequest(nTCR);
+        nTopic.setDescription(description);
+        nTopic.setName(title);
+        nTopic.setApprovedUser(admin);
+        save(nTopic);
+    }
 }

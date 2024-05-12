@@ -122,6 +122,7 @@ public class UserController {
         m.addAttribute("user", userService.getByLogin(principal.getName()));
         m.addAttribute("currTeam", teamService.getTeamById(teamId));
         m.addAttribute("requestsToTeam", teamService.getRequestedInTeamUsers(teamId));
+        m.addAttribute("requestsToTopics", topicService.getAllROTSByTeamId(teamId));
         m.addAttribute("allTeamRoles", TEAM_ROLE.values());
         m.addAttribute("amIMain", teamService.amIMainInThisTeam(userService.getByLogin(principal.getName()).getId(),teamId));
         return "teampage";
@@ -185,6 +186,24 @@ public class UserController {
             }
         }
         return "redirect:/topic/"+requestedTopicId; //переходим на страницу темы
+    }
+
+    @GetMapping("/team/cancelROTS/{rotsId}")
+    public String cancelROTS(@PathVariable long rotsId){
+        var currROTS = topicService.getROTSById(rotsId);
+        var currROT = topicService.getROTByROTSId(rotsId);
+        if(!currROTS.getStatus().name().equals("APPROVED")){ // если еще не утвердили тему проекта
+            topicService.deleteROTAndROTSByROTSId(rotsId);
+        }
+        return "redirect:/team/"+currROT.getRequestingTeam().getId();
+    }
+
+    @GetMapping("/team/{teamId}/cancelTopic")
+    public String teamCancelTopic(@PathVariable long teamId, Principal principal){
+        if(teamService.amIMainInThisTeam(userService.getByLogin(principal.getName()).getId(), teamId)){
+            teamService.cancelTopic(teamId);
+        }
+        return "redirect:/team/"+teamId;
     }
 
 

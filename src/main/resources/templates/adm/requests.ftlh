@@ -71,7 +71,7 @@
 </head>
 <body>
 <#include "*/schemes/navbar.ftl">
-    <button id="TCRbutton" class="disabled" onclick="showTCRMenu()">Запросы на создание новых тем <small style="color: green;"><#if countOfActiveTCR?has_content>+ ${countOfActiveTCR}</#if></small></button>
+    <button id="TCRbutton" class="disabled" onclick="showTCRMenu()">Запросы на создание новых тем <small style="color: green;"><#if countOfActiveTCR?has_content && countOfActiveTCR!=0>+ ${countOfActiveTCR}</#if></small></button>
     <div id="tcrequest_menu" class="full-monitor">
         <a href="#"  class="exit-btn" onclick="showTCRMenu()">Закрыть запросы на создание тем</a>
         <label>
@@ -231,7 +231,7 @@
         </div>
         <#--остальное-->
     </div>
-    <button id="Rbutton" onclick="showMenu()">Запросы на взятие темы <small style="color: green;"><#if requestsOnTopics?has_content>+ ${requestsOnTopics?size}</#if></small></button>
+    <button id="Rbutton" onclick="showMenu()">Запросы на взятие темы <small style="color: green;"><#if countOfActiveROTS?has_content && countOfActiveROTS!=0>+ ${countOfActiveROTS}</#if></small></button>
     <div id="request_menu" class="full-monitor hidden">
         <a href="#"  class="exit-btn" onclick="showMenu()">Закрыть</a>
         <div class="requests-container">
@@ -262,17 +262,34 @@
                                         ${rot.getTopicRequest().getTopic().getName()}
                                     </a>
                                 </td>
+
                                 <td>
-                                    <form action="/adm/approveROT" method="post">
-                                        <input hidden name="rotsId" value="${rot.getId()}">
-                                        <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
-                                        <button type="submit">Разрешить</button>
-                                    </form>
-                                    <form action="/adm/declineROT" method="post">
-                                        <input hidden name="rotsId" value="${rot.getId()}">
-                                        <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
-                                        <button type="submit">Отказать</button>
-                                    </form>
+                                    <#if rot.getStatus().name()=="CREATED"||rot.getStatus().name()=="RESUBMITTED">
+                                        <form action="/adm/approveROT" method="post">
+                                            <input hidden name="rotsId" value="${rot.getId()}">
+                                            <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
+                                            <button type="submit">Разрешить</button>
+                                        </form>
+                                        <form action="/adm/declineROT" method="post">
+                                            <input hidden name="rotsId" value="${rot.getId()}">
+                                            <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
+                                            <button type="submit">Отказать</button>
+                                        </form>
+                                    </#if>
+                                    <#if rot.getStatus().name()=="APPROVED">
+                                        <form action="/adm/revokeROT" method="post">
+                                            <input hidden name="rotsId" value="${rot.getId()}">
+                                            <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
+                                            <button type="submit">Отозвать разрешение</button>
+                                        </form>
+                                    </#if>
+                                    <#if rot.getStatus().name()=="REJECTED">
+                                        <form action="/adm/approveROT" method="post">
+                                            <input hidden name="rotsId" value="${rot.getId()}">
+                                            <input hidden name="rotId" value="${rot.getTopicRequest().getId()}">
+                                            <button type="submit">Разрешить</button>
+                                        </form>
+                                    </#if>
                                 </td>
                             </tr>
                         </#list>

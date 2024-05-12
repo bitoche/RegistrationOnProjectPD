@@ -20,6 +20,7 @@ public class STUDY_GROUP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     public String name;
-    @Nullable
     private int course;
+    @Nullable
+    private String institute;
 }

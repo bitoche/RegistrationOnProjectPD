@@ -19,7 +19,7 @@ public class TopicCreateRequestStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
+    @ManyToOne
     private TopicCreateRequest request;
     private REQUEST_STATUS status;
     private Date date;

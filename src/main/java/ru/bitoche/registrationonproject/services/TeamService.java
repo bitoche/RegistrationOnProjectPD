@@ -5,12 +5,10 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.stereotype.Service;
-import ru.bitoche.registrationonproject.models.AppUser;
-import ru.bitoche.registrationonproject.models.Team;
-import ru.bitoche.registrationonproject.models.TeamMember;
-import ru.bitoche.registrationonproject.models.TeamRequest;
+import ru.bitoche.registrationonproject.models.*;
 import ru.bitoche.registrationonproject.models.dtos.AllUserRequestsDTO;
 import ru.bitoche.registrationonproject.models.dtos.TeamTeamRequestDTO;
+import ru.bitoche.registrationonproject.models.enums.REQUEST_STATUS;
 import ru.bitoche.registrationonproject.models.enums.TEAM_ROLE;
 import ru.bitoche.registrationonproject.repos.TeamMemberRepos;
 import ru.bitoche.registrationonproject.repos.TeamRepos;
@@ -214,6 +212,22 @@ public class TeamService {
         out.setTeamTeamRequestDTOList(getAllTeamTeamRequests(userId));
         out.setTopicRequestStatusList(null); //сделать заявки на взятие темы командой (отмена, они в команде у главных пользователей)
         return out;
+    }
+    public TopicRequestStatus getROTSByTeamId(long teamId){
+        var teamTopic = teamRepos.findById(teamId).get().getTopic();
+        return topicService.getAllROTSByTeamId(teamId).stream().filter(rots-> {
+            assert teamTopic != null;
+            return Objects.equals(rots.getTopicRequest().getTopic().getId(), teamTopic.getId());
+        }).findFirst().get();
+    }
+    public void cancelTopic(long teamId){
+        var currTeam = getTeamById(teamId);
+        var currROTS = getROTSByTeamId(teamId);
+        currROTS.setStatusDate(new Date());
+        currROTS.setStatus(REQUEST_STATUS.CANCELED);
+        topicService.saveROTS(currROTS);
+        currTeam.setTopic(null);
+        saveTeam(currTeam);
     }
 
 }

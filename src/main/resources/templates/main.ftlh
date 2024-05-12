@@ -95,7 +95,7 @@
                         </div>
                         <div class="element-about">
                             <#if topic.approvedUser??>
-                                ${topic.addingDate?date} <label>утвердил: </label><a href="/users/profile/${topic.approvedUser.id}"> ${topic.approvedUser.surname} ${topic.approvedUser.name} <#if topic.approvedUser.patronymic?has_content>${topic.approvedUser.patronymic}</#if></a>
+                                ${topic.addingDate?date} <label>утвердил: </label><a href="/users/profile/${topic.getApprovedUser().getId()}">${topic.getApprovedUser().getFullName()}</a>
                             </#if>
                         </div>
                     </div>

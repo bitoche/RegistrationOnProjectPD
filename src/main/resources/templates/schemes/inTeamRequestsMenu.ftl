@@ -23,4 +23,9 @@
         topicRequestsContainer.classList.toggle('hidden');
         topicRequestsButton.classList.toggle('disabled');
     }
+    function cancelROT(rotsId){
+        if (confirm('Вы действительно хотите отменить заявку на эту тему?')){
+            document.location.href="/team/cancelROTS/"+rotsId;
+        }
+    }
 </script>

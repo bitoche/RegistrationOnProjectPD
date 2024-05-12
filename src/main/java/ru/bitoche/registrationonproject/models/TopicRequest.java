@@ -18,9 +18,9 @@ public class TopicRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
+    @ManyToOne
     private Topic topic;
-    @OneToOne
+    @ManyToOne
     private Team requestingTeam;
 }
 

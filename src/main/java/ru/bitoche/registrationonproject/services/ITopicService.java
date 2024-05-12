@@ -48,4 +48,14 @@ public interface ITopicService {
         int countTCRSByRequestStatus(REQUEST_STATUS status);
 
         void declineROT(long rotId);
+        List<TopicRequestStatus> getAllROTSByTeamId(long teamId);
+        TopicRequest getROTByROTSId(long rotsId);
+        TopicRequestStatus getROTSById(long rotsId);
+        void saveROTS(TopicRequestStatus rot);
+        void revokeROT(long rotId);
+
+        long countActiveROTS();
+
+
+        void createTopicAdm(String title, String description, AppUser admin);
 }

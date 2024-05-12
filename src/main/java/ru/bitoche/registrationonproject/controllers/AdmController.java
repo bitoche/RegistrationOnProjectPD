@@ -97,11 +97,13 @@ public class AdmController{
         m.addAttribute("allRequestStatuses", REQUEST_STATUS.values());
         m.addAttribute("countOfActiveTCR", topicService.getCountOfActiveCreateRequests());
         m.addAttribute("countOfAllTypesTCRS", topicService.countEveryTypeOfTCRequests());
+        m.addAttribute("countOfActiveROTS", topicService.countActiveROTS());
         m.addAttribute("requestsOnTopics", topicService.getAllTopicRequestsStatuses());
         return "adm/requests";
     }
     boolean checkPrincipalPrivileges(Principal p){
-        return userService.getByLogin(p.getName()).getRole().name() == "ADMIN" && userService.getByLogin(p.getName()).getRole().name() != "STUDENT";
+        return (userService.getByLogin(p.getName()).getRole().name().equals("ADMIN") //если авторизованный - админ
+                || userService.getByLogin(p.getName()).getRole().name().equals("MAIN_ADMIN")); //или мейн админ
     }
     @GetMapping("/approveTopic/{tcrId}")
     public String approveTopic(Principal principal, @PathVariable Long tcrId, Model model){
@@ -171,7 +173,15 @@ public class AdmController{
     public String approveROT(Principal principal,/* long rotsId,*/ long rotId ){
         if(userService.getByLogin(principal.getName()).getRole().name().equals("MAIN_ADMIN")
         || userService.getByLogin(principal.getName()).getRole().name().equals("ADMIN")){ // если авторизованный пользователь - админ или мейн админ
-            topicService.approveROT(rotId);
+            topicService.approveROT(rotId); //отказывает во всех остальных, и разрешает эту тему
+        }
+        return "redirect:/adm/requests";
+    }
+    @PostMapping("/revokeROT")
+    public String revokeROT(Principal principal,/* long rotsId,*/ long rotId ){
+        if(userService.getByLogin(principal.getName()).getRole().name().equals("MAIN_ADMIN")
+                || userService.getByLogin(principal.getName()).getRole().name().equals("ADMIN")){ // если авторизованный пользователь - админ или мейн админ
+            topicService.revokeROT(rotId); //отзывает разрешение на эту тему, из команды убирается тема
         }
         return "redirect:/adm/requests";
     }
@@ -179,9 +189,17 @@ public class AdmController{
     public String declineROT(Principal principal,/* long rotsId,*/ long rotId ){
         if(userService.getByLogin(principal.getName()).getRole().name().equals("MAIN_ADMIN")
                 || userService.getByLogin(principal.getName()).getRole().name().equals("ADMIN")){ // если авторизованный пользователь - админ или мейн админ
-            topicService.declineROT(rotId);
+            topicService.declineROT(rotId); //отказывает в этой теме
         }
         return "redirect:/adm/requests";
+    }
+
+    @PostMapping("/createTopic")
+    public String createTopicAdm(String title, String description, Principal p){
+        if(checkPrincipalPrivileges(p)){
+            topicService.createTopicAdm(title, description, userService.getByLogin(p.getName()));
+        }
+        return "redirect:/";
     }
 
 }

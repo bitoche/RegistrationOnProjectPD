@@ -7,7 +7,8 @@
             <#if user.getRole().name()=="MAIN_ADMIN"||user.getRole().name()=="ADMIN">
                 <div class="adm-func">
                     <a href="/adm/userList">Управление пользователями</a>
-                    <a href="/adm/addTopic">Добавить тему</a>
+                    <a id="createTopicFormBtn" onclick="showAdmCreateTopicForm()" href="#createTopic">Добавить тему</a>
+                    <#include "../adm/createTopic.ftl">
                 </div>
             </#if>
             <#if user.getRole().name()=="DEV">
