@@ -39,6 +39,16 @@ public class Team {
         }
         return false;
     }
+
+    public void deleteTeamMember(long tmId){
+        for (TeamMember tm:
+             members) {
+            if(tm.getId()==tmId) {
+                members.remove(tm);
+                break;
+            }
+        }
+    }
     public List<TeamMember> getMainMembers(){
         List<TeamMember> mainMembers = new ArrayList<>();
         for (TeamMember member:

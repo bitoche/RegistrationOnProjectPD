@@ -12,10 +12,7 @@ import ru.bitoche.registrationonproject.models.Topic;
 import ru.bitoche.registrationonproject.models.TopicCreateRequestStatus;
 import ru.bitoche.registrationonproject.models.enums.REQUEST_STATUS;
 import ru.bitoche.registrationonproject.models.enums.USER_ROLE;
-import ru.bitoche.registrationonproject.services.AppUserService;
-import ru.bitoche.registrationonproject.services.IAppUserService;
-import ru.bitoche.registrationonproject.services.ITopicService;
-import ru.bitoche.registrationonproject.services.TopicService;
+import ru.bitoche.registrationonproject.services.*;
 
 import java.security.Principal;
 import java.util.Date;
@@ -27,6 +24,7 @@ import java.util.Objects;
 public class AdmController{
     IAppUserService userService;
     ITopicService topicService;
+    TeamService teamService;
     @GetMapping("/userList")
     public String mainAdminMainPage(Principal principal, Model model, @Nullable String errMess){
         if(principal!=null){
@@ -39,6 +37,13 @@ public class AdmController{
         model.addAttribute("err", errMess);
 
         return "adm/madm_userlist";
+    }
+    @GetMapping("/teams")
+    public String getAllTeams(Model m, Principal p){
+        m.addAttribute("allTeams", teamService.getAllTeams());
+        m.addAttribute("allEmptyTeams", teamService.getAllTeams().stream().filter(t->t.getMembers().isEmpty()).toList());
+        m.addAttribute("user", userService.getByLogin(p.getName()));
+        return "adm/allTeams";
     }
     @PostMapping("/changerole")
     public String changeRole(Principal principal, String userId, String role, Model model){
@@ -200,6 +205,14 @@ public class AdmController{
             topicService.createTopicAdm(title, description, userService.getByLogin(p.getName()));
         }
         return "redirect:/";
+    }
+
+    @PostMapping("/deleteEmptyTeam")
+    public String deleteEmptyTeam(Principal principal, long teamId){
+        if(checkPrincipalPrivileges(principal)){
+            teamService.deleteEmptyTeam(teamId);
+        }
+        return "redirect:/adm/teams";
     }
 
 }

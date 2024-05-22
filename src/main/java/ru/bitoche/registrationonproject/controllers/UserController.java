@@ -206,5 +206,15 @@ public class UserController {
         return "redirect:/team/"+teamId;
     }
 
-
+    @GetMapping("/team/leaveTeam/{teamId}/{userId}")
+    public String leaveTeam(@PathVariable long teamId, @PathVariable long userId, Principal principal){
+        var transmittedUser = userService.getById(userId); // переданный в запросе человек
+        var transmittedTeam = teamService.getTeamById(teamId); // переданная в запросе команда
+        if(Objects.equals(principal.getName(), transmittedUser.getLogin())){ // если я пробую выйти, а не кто-то ссылку ввёл
+            if(teamService.isUserAlreadyInThisTeam(transmittedUser, transmittedTeam)){ // если я есть в этой команде
+                teamService.deleteUserFromTeam(transmittedUser, transmittedTeam);
+            }
+        }
+        return "redirect:/users/profile/"+userId;
+    }
 }

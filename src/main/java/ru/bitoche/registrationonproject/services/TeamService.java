@@ -29,6 +29,13 @@ public class TeamService {
     private IAppUserService userService;
     private ITopicService topicService;
 
+    public void deleteUserFromTeam(AppUser user, Team team){
+        var currTeamMember = getTeamMemberByUserIdAndTeamId(user.getId(), team.getId());
+        team.deleteTeamMember(currTeamMember.getId());
+        saveTeam(team);
+        teamMemberRepos.deleteById(currTeamMember.getId());
+    }
+
     public List<TeamMember> getAllTeamMembers(){
         return (List<TeamMember>) teamMemberRepos.findAll();
     }
@@ -228,6 +235,12 @@ public class TeamService {
         topicService.saveROTS(currROTS);
         currTeam.setTopic(null);
         saveTeam(currTeam);
+    }
+    public void deleteEmptyTeam(long teamId){
+        var currTeam = getTeamById(teamId);
+        if(currTeam.getMembers().isEmpty()){
+            teamRepos.delete(currTeam);
+        }
     }
 
 }

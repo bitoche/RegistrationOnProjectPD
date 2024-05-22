@@ -150,11 +150,14 @@
 </#if>
 <#if amIMain>
     <script>
+        <#if currTeam.getTopic()??>
         function confirmCancelTopic(){
             if(confirm('Вы действительно хотите отказаться от темы ${currTeam.getTopic().getName()}?')){
                 document.location.href='/team/${currTeam.getId()}/cancelTopic';
             }
         }
+        </#if>
+
         function changeRole(event, memberName){
             event.preventDefault();
             var form = event.target.form;
