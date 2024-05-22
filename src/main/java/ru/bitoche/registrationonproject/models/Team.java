@@ -29,6 +29,16 @@ public class Team {
     @OneToOne
     @Nullable
     private Topic topic;
+
+    public boolean amIMember(String login){
+        for (TeamMember tm:
+             members) {
+            if(Objects.equals(tm.getMember().getLogin(), login)){
+                return true;
+            }
+        }
+        return false;
+    }
     public List<TeamMember> getMainMembers(){
         List<TeamMember> mainMembers = new ArrayList<>();
         for (TeamMember member:

@@ -125,6 +125,7 @@
                         </form>
                     </td>
                 </#if>
+                <#if member.getMember().getLogin()==user.getLogin()><a onclick="confirmLeaveTeam()" href="#leave">Покинуть команду</a></#if>
                 <#assign counter+=1>
             </tr>
         </#list>
@@ -146,7 +147,6 @@
         <input hidden name="authedUserId" value="${user.getId()}">
         <button onclick="return confirmDeleteSubmit(event)" type="submit">Распустить команду</button> <#--НЕ УДАЛЯТЬ EVENT-->
     </form>
-
 </#if>
 <#if amIMain>
     <script>
@@ -182,6 +182,14 @@
         }
     </script>
 </#if>
-
+<#if currTeam.amIMember(user.getLogin())>
+    <script>
+        function confirmLeaveTeam(){
+            if(confirm('Вы действительно хотите покинуть команду "${currTeam.getName()}?"')){
+                document.location.href="/team/leaveTeam/${currTeam.getId()}/${user.getId()}";
+            }
+        }
+    </script>
+</#if>
 </body>
 </html>

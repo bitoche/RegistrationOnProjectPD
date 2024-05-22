@@ -203,7 +203,7 @@
         <p style="color: red">Пока не находится в команде.</p>
     </#if>
 <#if user.getId()==userData.getId()>
-    <a id="requestToTeamFormButton" onclick="showRTTF()" class="actionBtn">Подать заявку в группу</a>
+    <a id="requestToTeamFormButton" onclick="showRTTF()" class="actionBtn">Подать заявку в команду</a>
     <div id="rttfMenu" class="teamrequestdiv hidden" style="background: #fff!important;" >
         <a href="#"  class="exit-btn" onclick="showRTTF()">Закрыть меню</a>
         <label>
@@ -240,7 +240,7 @@
     </div>
 </#if>
 <#if user.getId()==userData.getId()>
-    <a id="requestToCreateTeamFormButton" onclick="showRTCTF()" class="actionBtn">Создать группу</a>
+    <a id="requestToCreateTeamFormButton" onclick="showRTCTF()" class="actionBtn">Создать свою команду</a>
     <div id="rtctfMenu" class="teamrequestdiv hidden">
         <a href="#"  class="exit-btn" onclick="showRTCTF()">Закрыть меню</a>
         <form method="post" action="/teams/createTeam">
